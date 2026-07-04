@@ -17,5 +17,6 @@ Estado REAL do sistema, por módulo. Cada spec: escopo, models, rotas API (+perm
 | [10-atendimento](10-atendimento.md) | Requerimentos/protocolos, certificados, PDFs (boletim/declaração/histórico), documentos/upload |
 | [11-integracoes](11-integracoes.md) | SMTP, Evolution/WhatsApp, PIX (stub), assinatura (stub), Google OAuth, ViaCEP |
 | [12-design](12-design.md) | Tema verde TEC/TailAdmin, tokens, sidebar agrupado, header, login split, fontes |
+| [13-relatorios](13-relatorios.md) | Relatórios gerenciais (acadêmico, frequência, financeiro, ocupação) c/ filtros, gráficos, CSV e impressão |
 
 Visão macro/roadmap original: [`../../SPEC.md`](../../SPEC.md).

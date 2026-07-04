@@ -32,6 +32,7 @@ import {
   Landmark,
   Headset,
   Megaphone,
+  BarChart3,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { hasPermission } from "@/lib/rbac";
@@ -122,6 +123,16 @@ const NAV_GROUPS: { g: string; icon: typeof Users; items: NavItem[] }[] = [
       { k: "certificados", href: "/certificados", icon: Award, perm: "certificado:ler" },
       { k: "biblioteca", href: "/biblioteca", icon: BookOpen, perm: "biblioteca:ler" },
       { k: "selecao", href: "/selecao", icon: ClipboardPen, perm: "selecao:ler" },
+    ],
+  },
+  {
+    g: "relatorios",
+    icon: BarChart3,
+    items: [
+      { k: "relAcademico", href: "/relatorios/academico", icon: BarChart3, perm: "relatorio:ler" },
+      { k: "relFrequencia", href: "/relatorios/frequencia", icon: UserCheck, perm: "relatorio:ler" },
+      { k: "relFinanceiro", href: "/relatorios/financeiro", icon: DollarSign, perm: "relatorio:ler" },
+      { k: "relOcupacao", href: "/relatorios/ocupacao", icon: DoorOpen, perm: "relatorio:ler" },
     ],
   },
   {

@@ -36,7 +36,11 @@
     "fluxoCaixa": "Cash Flow",
     "rematriculas": "Re-enrollment",
     "avisos": "Bulletin Board",
-    "caixa": "Cashier"
+    "caixa": "Cashier",
+    "relAcademico": "Academic",
+    "relFrequencia": "Attendance",
+    "relFinanceiro": "Financial",
+    "relOcupacao": "Occupancy"
   },
   "app": {
     "titulo": "School ERP",
@@ -53,6 +57,7 @@
     "financeiro": "Finance",
     "atendimento": "Front Desk",
     "comunicacao": "Communication",
-    "configuracoes": "Settings"
+    "configuracoes": "Settings",
+    "relatorios": "Reports"
   }
 }

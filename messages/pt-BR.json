@@ -36,7 +36,11 @@
     "fluxoCaixa": "Fluxo de Caixa",
     "rematriculas": "Rematrículas",
     "avisos": "Mural de Avisos",
-    "caixa": "Caixa"
+    "caixa": "Caixa",
+    "relAcademico": "Acadêmico",
+    "relFrequencia": "Frequência",
+    "relFinanceiro": "Financeiro",
+    "relOcupacao": "Ocupação"
   },
   "app": {
     "titulo": "ERP Escola",
@@ -53,6 +57,7 @@
     "financeiro": "Financeiro",
     "atendimento": "Atendimento",
     "comunicacao": "Comunicação",
-    "configuracoes": "Configurações"
+    "configuracoes": "Configurações",
+    "relatorios": "Relatórios"
   }
 }
