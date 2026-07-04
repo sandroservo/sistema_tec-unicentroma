@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: escola
+      POSTGRES_PASSWORD: escola
+      POSTGRES_DB: escola
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U escola -d escola"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://escola:escola@db:5432/escola?schema=public"
+      AUTH_SECRET: "${AUTH_SECRET:-troque-por-uma-string-aleatoria-longa}"
+      AUTH_TRUST_HOST: "true"
+      UPLOAD_DIR: "/app/uploads"
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
+    # Aplica schema ao BD, cria admin (idempotente) e sobe o servidor.
+    command: sh -c "npx prisma db push --skip-generate && npm run db:seed && npm start"
+
+volumes:
+  pgdata:
+  uploads:

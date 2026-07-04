@@ -1,0 +1,254 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Paleta base TailAdmin (grays UntitledUI) + brand VERDE da logo TEC Unicentro (#3d7c2d). */
+:root {
+  --background: 210 20% 98%;        /* gray-50  #f9fafb */
+  --foreground: 220 43% 11%;        /* gray-900 #101828 */
+
+  --card: 0 0% 100%;
+  --card-foreground: 220 43% 11%;
+  --card-border: 218 17% 91%;       /* gray-200 #e4e7ec */
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 43% 11%;
+  --popover-border: 218 17% 91%;
+
+  --primary: 101 47% 33%;           /* verde TEC #3d7c2d */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 216 24% 96%;         /* gray-100 #f2f4f7 */
+  --secondary-foreground: 218 24% 27%; /* gray-700 #344054 */
+
+  --muted: 216 24% 96%;
+  --muted-foreground: 221 13% 46%;  /* gray-500 #667085 */
+
+  --accent: 100 44% 95%;            /* verde bem claro */
+  --accent-foreground: 101 47% 28%; /* verde escuro */
+
+  --destructive: 4 86% 58%;         /* error-500 #f04438 */
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 218 17% 91%;
+  --input: 218 17% 91%;
+  --ring: 101 47% 33%;
+
+  /* Sidebar VERDE ESCURO (estilo Cerbrum), sempre — independe do tema */
+  --sidebar: 152 40% 13%;                 /* verde escuro */
+  --sidebar-foreground: 150 18% 88%;      /* texto claro */
+  --sidebar-border: 152 24% 22%;
+  --sidebar-primary: 101 50% 45%;         /* verde da marca (mais claro p/ contraste) */
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 152 28% 22%;          /* hover */
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: 101 50% 45%;
+
+  --chart-1: 101 47% 38%;           /* verde TEC */
+  --chart-2: 88 50% 45%;            /* verde-limão (arco da logo) */
+  --chart-3: 152 82% 39%;           /* success #12b76a */
+  --chart-4: 34 93% 50%;            /* warning #f79009 */
+  --chart-5: 199 91% 48%;           /* azul info */
+
+  --app-font-sans: var(--font-inter), 'Inter', sans-serif;
+  --app-font-serif: Georgia, serif;
+  --app-font-mono: Menlo, monospace;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 222 41% 8%;         /* gray-950 #0c111d */
+  --foreground: 210 20% 98%;
+
+  --card: 220 43% 11%;              /* gray-900 #101828 */
+  --card-foreground: 210 20% 98%;
+  --card-border: 214 33% 17%;       /* gray-800 #1d2939 */
+
+  --popover: 220 43% 11%;
+  --popover-foreground: 210 20% 98%;
+  --popover-border: 214 33% 17%;
+
+  --primary: 100 44% 46%;           /* verde um pouco mais claro p/ contraste no escuro */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 214 33% 17%;
+  --secondary-foreground: 210 20% 98%;
+
+  --muted: 214 33% 17%;
+  --muted-foreground: 218 15% 65%;  /* gray-400 #98a2b3 */
+
+  --accent: 214 33% 17%;
+  --accent-foreground: 100 50% 62%; /* verde claro */
+
+  --destructive: 4 86% 58%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 214 33% 17%;
+  --input: 214 33% 17%;
+  --ring: 100 44% 46%;
+
+  --sidebar: 152 40% 12%;           /* verde escuro (igual ao tema claro) */
+  --sidebar-foreground: 150 18% 88%;
+  --sidebar-border: 152 24% 20%;
+  --sidebar-primary: 101 50% 46%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 152 28% 20%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: 101 50% 46%;
+
+  --chart-1: 100 50% 55%;
+  --chart-2: 88 50% 55%;
+  --chart-3: 152 82% 45%;
+  --chart-4: 34 93% 55%;
+  --chart-5: 199 91% 55%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* ── FullCalendar: estilo TailAdmin adaptado aos tokens shadcn ─────────────── */
+.fc {
+  --fc-border-color: hsl(var(--border));
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: hsl(var(--muted));
+  --fc-today-bg-color: transparent;
+  --fc-event-border-color: transparent;
+}
+.fc .fc-view-harness { max-width: 100%; overflow-x: auto; }
+.fc-dayGridMonth-view.fc-view.fc-daygrid { min-width: 718px; }
+.fc .fc-scrollgrid-section > * { border-right-width: 0; border-bottom-width: 0; }
+.fc .fc-scrollgrid { border-left-width: 0; }
+.fc .fc-toolbar.fc-header-toolbar { display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem 1.5rem 0; }
+@media (min-width: 640px) { .fc .fc-toolbar.fc-header-toolbar { flex-direction: row; } }
+
+.fc-button-group { gap: 0.5rem; }
+.fc-button-group .fc-button {
+  display: flex; height: 2.5rem; width: 2.5rem; align-items: center; justify-content: center;
+  border-radius: 0.5rem !important; border: 1px solid hsl(var(--border)); background: transparent; box-shadow: none;
+}
+.fc-button-group .fc-button:hover { background: hsl(var(--muted)); border-color: hsl(var(--border)); }
+.fc-button-group .fc-button:active { background: transparent !important; border-color: hsl(var(--border)) !important; box-shadow: none !important; }
+.fc-button-group .fc-button.fc-prev-button:before {
+  margin-top: 0.25rem; display: inline-block;
+  content: url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.0068 6L9.75684 12.25L16.0068 18.5' stroke='%23667085' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
+}
+.fc-button-group .fc-button.fc-next-button:before {
+  margin-top: 0.25rem; display: inline-block;
+  content: url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M9.50684 19L15.7568 12.75L9.50684 6.5' stroke='%23667085' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
+}
+.fc-button-group .fc-button .fc-icon { display: none; }
+
+.fc-addEventButton-button {
+  background: hsl(var(--primary)) !important; color: hsl(var(--primary-foreground)) !important;
+  border-radius: 0.5rem !important; border: 0 !important; padding: 0.625rem 1rem !important;
+  font-size: 0.875rem !important; font-weight: 500 !important; box-shadow: none !important;
+}
+.fc-addEventButton-button:hover { filter: brightness(0.94); }
+.fc-toolbar-title { font-size: 1.125rem !important; font-weight: 500 !important; color: hsl(var(--foreground)); }
+
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child { border-radius: 0.5rem; background: hsl(var(--muted)); padding: 0.125rem; }
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child .fc-button {
+  height: auto !important; width: auto !important; border-radius: 0.375rem; border: 0 !important; background: transparent;
+  padding: 0.5rem 1.25rem !important; font-size: 0.875rem; font-weight: 500; color: hsl(var(--muted-foreground)); box-shadow: none !important;
+}
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child .fc-button:hover { color: hsl(var(--foreground)); }
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child .fc-button.fc-button-active {
+  background: hsl(var(--card)); color: hsl(var(--foreground));
+}
+
+.fc-theme-standard th { border-left: 0 !important; border-right: 0 !important; border-top: 1px solid hsl(var(--border)) !important; background: hsl(var(--muted)); text-align: left !important; }
+.fc-theme-standard td, .fc-theme-standard .fc-scrollgrid { border-color: hsl(var(--border)) !important; }
+.fc .fc-col-header-cell-cushion { padding: 1rem 1.25rem !important; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+.fc .fc-daygrid-day { padding: 0.5rem; }
+.fc .fc-daygrid-day.fc-day-today .fc-scrollgrid-sync-inner { border-radius: 0.25rem; background: hsl(var(--muted)); }
+.fc .fc-daygrid-day-number { padding: 0.75rem !important; font-size: 0.875rem; font-weight: 500; color: hsl(var(--foreground)); }
+.fc .fc-daygrid-day-top { flex-direction: row !important; }
+.fc .fc-day-other .fc-daygrid-day-top { opacity: 1; }
+.fc .fc-day-other .fc-daygrid-day-top .fc-daygrid-day-number { color: hsl(var(--muted-foreground) / 0.6); }
+
+.event-fc-color { border-radius: 0.5rem; padding: 0.625rem 0.75rem 0.625rem 1rem; }
+.event-fc-color .fc-event-title { padding: 0; font-size: 0.875rem; font-weight: 400; color: hsl(var(--foreground)); }
+.fc-daygrid-event-dot { margin: 0 0.75rem 0 0; height: 1.25rem; width: 0.25rem; border-radius: 0.125rem; border: none; }
+.fc-event:focus { box-shadow: none; }
+.fc-daygrid-event.fc-event-start { margin-left: 0.75rem !important; }
+.event-fc-color.fc-bg-primary { background: hsl(var(--primary) / 0.1); }
+.event-fc-color.fc-bg-danger { background: hsl(var(--destructive) / 0.1); }
+.event-fc-color.fc-bg-success { background: hsl(var(--chart-3) / 0.12); }
+.event-fc-color.fc-bg-warning { background: hsl(var(--chart-4) / 0.14); }
+.event-fc-color.fc-bg-primary .fc-daygrid-event-dot { background: hsl(var(--primary)); }
+.event-fc-color.fc-bg-danger .fc-daygrid-event-dot { background: hsl(var(--destructive)); }
+.event-fc-color.fc-bg-success .fc-daygrid-event-dot { background: hsl(var(--chart-3)); }
+.event-fc-color.fc-bg-warning .fc-daygrid-event-dot { background: hsl(var(--chart-4)); }
+.fc-direction-ltr .fc-timegrid-slot-label-frame { padding: 0.375rem 0.75rem; text-align: left; font-size: 0.875rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
+.fc .fc-timegrid-axis-cushion { font-size: 0.875rem; font-weight: 500; color: hsl(var(--muted-foreground)); }

@@ -1,0 +1,886 @@
+// ERP Escola Técnica — schema mapeado às tabelas existentes (mesmo BD do projeto Drizzle).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Aluno {
+  id             Int          @id @default(autoincrement())
+  nome           String
+  email          String       @unique
+  cpf            String       @unique
+  telefone       String?
+  dataNascimento DateTime?    @map("data_nascimento") @db.Date
+  endereco       String?
+  cidade         String?
+  estado         String?
+  cep            String?
+  status         String       @default("ativo")
+  foto           String?
+  excluidoEm     DateTime?    @map("excluido_em") // soft delete
+  criadoEm       DateTime     @default(now()) @map("criado_em")
+  atualizadoEm   DateTime     @default(now()) @updatedAt @map("atualizado_em")
+  matriculas     Matricula[]
+  notas          Nota[]
+  cobrancas      Cobranca[]
+  certificados   Certificado[]
+  presencas      Presenca[]
+  lancamentos    LancamentoNota[]
+  usuario        User?
+  contratos      Contrato[]
+  bolsas         Bolsa[]
+  progressoAulas ProgressoAula[]
+  tentativas     TentativaQuestionario[]
+  entregas       EntregaAtividade[]
+  emprestimos    Emprestimo[]
+  reservas       Reserva[]
+  requerimentos  Requerimento[]
+  ocorrencias    Ocorrencia[]
+  responsaveis   Responsavel[]
+  rematriculas   Rematricula[]
+
+  @@map("alunos")
+}
+
+model Professor {
+  id            Int          @id @default(autoincrement())
+  nome          String
+  email         String       @unique
+  cpf           String       @unique
+  telefone      String?
+  especialidade String?
+  titulacao     String?
+  status        String       @default("ativo")
+  foto          String?
+  criadoEm      DateTime     @default(now()) @map("criado_em")
+  disciplinas   Disciplina[]
+  turmas        Turma[]
+  usuario       User?
+
+  @@map("professores")
+}
+
+model Curso {
+  id           Int           @id @default(autoincrement())
+  nome         String
+  descricao    String?
+  cargaHoraria Int           @map("carga_horaria")
+  modalidade   String        @default("presencial")
+  valor        Decimal       @default(0) @db.Decimal(10, 2)
+  status       String        @default("ativo")
+  area         String?
+  criadoEm     DateTime      @default(now()) @map("criado_em")
+  disciplinas  Disciplina[]
+  turmas       Turma[]
+  certificados Certificado[]
+  modulosEad   ModuloEad[]
+  foruns       Forum[]
+
+  @@map("cursos")
+}
+
+model Disciplina {
+  id           Int          @id @default(autoincrement())
+  nome         String
+  descricao    String?
+  cargaHoraria Int          @map("carga_horaria")
+  cursoId      Int          @map("curso_id")
+  professorId  Int?         @map("professor_id")
+  periodo      Int? // período/semestre na matriz curricular
+  obrigatoria  Boolean      @default(true)
+  criadoEm     DateTime     @default(now()) @map("criado_em")
+  curso        Curso        @relation(fields: [cursoId], references: [id])
+  professor    Professor?   @relation(fields: [professorId], references: [id])
+  notas        Nota[]
+  aulas        Aula[]
+  planoEnsino  PlanoEnsino?
+  avaliacoes   Avaliacao[]
+
+  @@map("disciplinas")
+}
+
+model Turma {
+  id            Int         @id @default(autoincrement())
+  nome          String
+  cursoId       Int         @map("curso_id")
+  professorId   Int?        @map("professor_id")
+  dataInicio    DateTime    @map("data_inicio") @db.Date
+  dataFim       DateTime?   @map("data_fim") @db.Date
+  horario       String?
+  vagas         Int         @default(30)
+  vagasOcupadas Int         @default(0) @map("vagas_ocupadas")
+  status        String      @default("planejada")
+  salaId        Int?        @map("sala_id")
+  anoLetivo     Int?        @map("ano_letivo")
+  semestre      Int? // 1 ou 2
+  criadoEm      DateTime    @default(now()) @map("criado_em")
+  curso         Curso       @relation(fields: [cursoId], references: [id])
+  professor     Professor?  @relation(fields: [professorId], references: [id])
+  sala          Sala?       @relation(fields: [salaId], references: [id])
+  matriculas    Matricula[]
+  aulas         Aula[]
+  avaliacoes    Avaliacao[]
+  rematriculas  Rematricula[]
+
+  @@map("turmas")
+}
+
+model Matricula {
+  id            Int      @id @default(autoincrement())
+  alunoId       Int      @map("aluno_id")
+  turmaId       Int      @map("turma_id")
+  status        String   @default("ativa")
+  dataMatricula DateTime @default(now()) @map("data_matricula")
+  observacoes   String?
+  aluno         Aluno    @relation(fields: [alunoId], references: [id])
+  turma         Turma    @relation(fields: [turmaId], references: [id])
+
+  @@map("matriculas")
+}
+
+model Nota {
+  id           Int        @id @default(autoincrement())
+  alunoId      Int        @map("aluno_id")
+  turmaId      Int        @map("turma_id")
+  disciplinaId Int        @map("disciplina_id")
+  nota1        Decimal?   @db.Decimal(4, 2)
+  nota2        Decimal?   @db.Decimal(4, 2)
+  nota3        Decimal?   @db.Decimal(4, 2)
+  notaFinal    Decimal?   @map("nota_final") @db.Decimal(4, 2)
+  media        Decimal?   @db.Decimal(4, 2)
+  situacao     String     @default("em_curso")
+  criadoEm     DateTime   @default(now()) @map("criado_em")
+  aluno        Aluno      @relation(fields: [alunoId], references: [id])
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id])
+
+  @@map("notas")
+}
+
+model Cobranca {
+  id              Int       @id @default(autoincrement())
+  alunoId         Int       @map("aluno_id")
+  descricao       String
+  valor           Decimal   @db.Decimal(10, 2)
+  vencimento      DateTime  @db.Date
+  dataPagamento   DateTime? @map("data_pagamento") @db.Date
+  status          String    @default("pendente")
+  metodoPagamento String?   @map("metodo_pagamento")
+  observacoes     String?
+  criadoEm        DateTime  @default(now()) @map("criado_em")
+  aluno           Aluno     @relation(fields: [alunoId], references: [id])
+
+  @@map("cobrancas")
+}
+
+model Certificado {
+  id           Int      @id @default(autoincrement())
+  alunoId      Int      @map("aluno_id")
+  cursoId      Int      @map("curso_id")
+  turmaId      Int?     @map("turma_id")
+  matriculaId  Int?     @map("matricula_id")
+  dataEmissao  DateTime @map("data_emissao") @db.Date
+  cargaHoraria Int      @map("carga_horaria")
+  codigo       String   @unique
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  aluno        Aluno    @relation(fields: [alunoId], references: [id])
+  curso        Curso    @relation(fields: [cursoId], references: [id])
+
+  @@map("certificados")
+}
+
+model Atividade {
+  id        Int      @id @default(autoincrement())
+  tipo      String
+  descricao String
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@map("atividades")
+}
+
+// ── Fase 2: acadêmico ──────────────────────────────────────────────────────
+
+model Sala {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  bloco      String?
+  capacidade Int      @default(0)
+  tipo       String   @default("sala") // sala | laboratorio | auditorio
+  recursos   String? // ex: "projetor, ar-condicionado"
+  ativo      Boolean  @default(true)
+  criadoEm   DateTime @default(now()) @map("criado_em")
+  turmas     Turma[]
+
+  @@map("salas")
+}
+
+model CalendarioEvento {
+  id         Int       @id @default(autoincrement())
+  titulo     String
+  // feriado | prova | recesso | evento | conselho | formatura | inicio_semestre | fim_semestre
+  tipo       String
+  dataInicio DateTime  @map("data_inicio") @db.Date
+  dataFim    DateTime? @map("data_fim") @db.Date
+  descricao  String?
+  criadoEm   DateTime  @default(now()) @map("criado_em")
+
+  @@index([dataInicio])
+  @@map("calendario_eventos")
+}
+
+// Diário eletrônico: registro de uma aula ministrada.
+model Aula {
+  id           Int        @id @default(autoincrement())
+  turmaId      Int        @map("turma_id")
+  disciplinaId Int        @map("disciplina_id")
+  data         DateTime   @db.Date
+  conteudo     String // conteúdo ministrado
+  observacoes  String?
+  criadoEm     DateTime   @default(now()) @map("criado_em")
+  turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id])
+  presencas    Presenca[]
+
+  @@index([turmaId, data])
+  @@map("aulas")
+}
+
+// Frequência: presença de um aluno em uma aula.
+model Presenca {
+  id            Int      @id @default(autoincrement())
+  aulaId        Int      @map("aula_id")
+  alunoId       Int      @map("aluno_id")
+  status        String   @default("presente") // presente | falta | atraso | justificada
+  justificativa String?
+  criadoEm      DateTime @default(now()) @map("criado_em")
+  aula          Aula     @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  aluno         Aluno    @relation(fields: [alunoId], references: [id])
+
+  @@unique([aulaId, alunoId])
+  @@map("presencas")
+}
+
+// Plano de ensino de uma disciplina (1:1).
+model PlanoEnsino {
+  id                    Int        @id @default(autoincrement())
+  disciplinaId          Int        @unique @map("disciplina_id")
+  ementa                String?
+  conteudoProgramatico  String?    @map("conteudo_programatico")
+  competencias          String?
+  metodologia           String?
+  bibliografia          String?
+  criterioAvaliacao     String?    @map("criterio_avaliacao")
+  atualizadoEm          DateTime   @default(now()) @updatedAt @map("atualizado_em")
+  disciplina            Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  @@map("planos_ensino")
+}
+
+// Avaliação com peso e tipo (prova, trabalho, seminário...). Média ponderada por disciplina/turma.
+model Avaliacao {
+  id           Int              @id @default(autoincrement())
+  turmaId      Int              @map("turma_id")
+  disciplinaId Int              @map("disciplina_id")
+  // prova | trabalho | seminario | atividade | pratica | recuperacao | segunda_chamada
+  tipo         String
+  descricao    String?
+  peso         Decimal          @default(1) @db.Decimal(4, 2)
+  data         DateTime?        @db.Date
+  criadoEm     DateTime         @default(now()) @map("criado_em")
+  turma        Turma            @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  disciplina   Disciplina       @relation(fields: [disciplinaId], references: [id])
+  lancamentos  LancamentoNota[]
+
+  @@index([turmaId, disciplinaId])
+  @@map("avaliacoes")
+}
+
+// Nota de um aluno numa avaliação.
+model LancamentoNota {
+  id          Int       @id @default(autoincrement())
+  avaliacaoId Int       @map("avaliacao_id")
+  alunoId     Int       @map("aluno_id")
+  valor       Decimal?  @db.Decimal(4, 2)
+  criadoEm    DateTime  @default(now()) @map("criado_em")
+  avaliacao   Avaliacao @relation(fields: [avaliacaoId], references: [id], onDelete: Cascade)
+  aluno       Aluno     @relation(fields: [alunoId], references: [id])
+
+  @@unique([avaliacaoId, alunoId])
+  @@map("lancamentos_nota")
+}
+
+// ── Fase 4: financeiro avançado ─────────────────────────────────────────────
+
+// Convênio de desconto (ex: empresa parceira).
+model Convenio {
+  id                Int        @id @default(autoincrement())
+  nome              String
+  empresa           String?
+  percentualDesconto Decimal   @default(0) @map("percentual_desconto") @db.Decimal(5, 2)
+  ativo             Boolean    @default(true)
+  criadoEm          DateTime   @default(now()) @map("criado_em")
+  contratos         Contrato[]
+
+  @@map("convenios")
+}
+
+// Bolsa de estudo concedida a um aluno.
+model Bolsa {
+  id         Int        @id @default(autoincrement())
+  alunoId    Int        @map("aluno_id")
+  tipo       String     @default("parcial") // integral | parcial
+  percentual Decimal    @default(0) @db.Decimal(5, 2)
+  motivo     String?
+  dataInicio DateTime   @map("data_inicio") @db.Date
+  dataFim    DateTime?  @map("data_fim") @db.Date
+  ativo      Boolean    @default(true)
+  criadoEm   DateTime   @default(now()) @map("criado_em")
+  aluno      Aluno      @relation(fields: [alunoId], references: [id])
+  contratos  Contrato[]
+
+  @@index([alunoId])
+  @@map("bolsas")
+}
+
+// Contrato financeiro do aluno (parcelado). descontoPercentual resume bolsa/convênio.
+model Contrato {
+  id                 Int        @id @default(autoincrement())
+  alunoId            Int        @map("aluno_id")
+  cursoId            Int?       @map("curso_id")
+  turmaId            Int?       @map("turma_id")
+  valorTotal         Decimal    @map("valor_total") @db.Decimal(10, 2)
+  numParcelas        Int        @map("num_parcelas")
+  diaVencimento      Int        @default(10) @map("dia_vencimento")
+  dataInicio         DateTime   @map("data_inicio") @db.Date
+  descontoPercentual Decimal    @default(0) @map("desconto_percentual") @db.Decimal(5, 2)
+  bolsaId            Int?       @map("bolsa_id")
+  convenioId         Int?       @map("convenio_id")
+  status             String     @default("ativo") // ativo | encerrado | cancelado
+  observacoes        String?
+  criadoEm           DateTime   @default(now()) @map("criado_em")
+  aluno              Aluno      @relation(fields: [alunoId], references: [id])
+  bolsa              Bolsa?     @relation(fields: [bolsaId], references: [id])
+  convenio           Convenio?  @relation(fields: [convenioId], references: [id])
+  parcelas           Parcela[]
+
+  @@index([alunoId])
+  @@map("contratos")
+}
+
+// Parcela/mensalidade de um contrato (unidade cobrável).
+model Parcela {
+  id              Int       @id @default(autoincrement())
+  contratoId      Int       @map("contrato_id")
+  numero          Int
+  valor           Decimal   @db.Decimal(10, 2)
+  vencimento      DateTime  @db.Date
+  dataPagamento   DateTime? @map("data_pagamento") @db.Date
+  status          String    @default("pendente") // pendente | pago | vencido | cancelado | renegociada
+  metodoPagamento String?   @map("metodo_pagamento") // pix | boleto | cartao | dinheiro
+  criadoEm        DateTime  @default(now()) @map("criado_em")
+  contrato        Contrato  @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+
+  @@index([contratoId, status])
+  @@index([vencimento])
+  @@map("parcelas")
+}
+
+// Renegociação: registra a origem e o novo contrato gerado.
+model Renegociacao {
+  id             Int      @id @default(autoincrement())
+  alunoId        Int      @map("aluno_id")
+  contratoOrigemId Int?   @map("contrato_origem_id")
+  novoContratoId Int?     @map("novo_contrato_id")
+  valorTotal     Decimal  @map("valor_total") @db.Decimal(10, 2)
+  numParcelas    Int      @map("num_parcelas")
+  motivo         String?
+  criadoEm       DateTime @default(now()) @map("criado_em")
+
+  @@map("renegociacoes")
+}
+
+// ── Fase 5: EAD (ambiente virtual de aprendizagem) ──────────────────────────
+
+model ModuloEad {
+  id            Int            @id @default(autoincrement())
+  cursoId       Int            @map("curso_id")
+  titulo        String
+  descricao     String?
+  ordem         Int            @default(0)
+  criadoEm      DateTime       @default(now()) @map("criado_em")
+  curso         Curso          @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  aulas         AulaEad[]
+  questionarios Questionario[]
+
+  @@index([cursoId, ordem])
+  @@map("modulos_ead")
+}
+
+model AulaEad {
+  id         Int                @id @default(autoincrement())
+  moduloId   Int                @map("modulo_id")
+  titulo     String
+  tipo       String             @default("video") // video | pdf | texto | link
+  url        String? // vídeo (embed), pdf ou link externo
+  conteudo   String? // texto/markdown quando tipo=texto
+  ordem      Int                @default(0)
+  duracaoMin Int?               @map("duracao_min")
+  criadoEm   DateTime           @default(now()) @map("criado_em")
+  modulo     ModuloEad          @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  progresso  ProgressoAula[]
+  entregas   EntregaAtividade[]
+
+  @@index([moduloId, ordem])
+  @@map("aulas_ead")
+}
+
+model ProgressoAula {
+  id          Int       @id @default(autoincrement())
+  aulaId      Int       @map("aula_id")
+  alunoId     Int       @map("aluno_id")
+  concluido   Boolean   @default(false)
+  concluidoEm DateTime? @map("concluido_em")
+  aula        AulaEad   @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  aluno       Aluno     @relation(fields: [alunoId], references: [id])
+
+  @@unique([aulaId, alunoId])
+  @@map("progresso_aulas")
+}
+
+model Questionario {
+  id         Int                     @id @default(autoincrement())
+  moduloId   Int                     @map("modulo_id")
+  titulo     String
+  notaMinima Decimal?                @map("nota_minima") @db.Decimal(4, 2)
+  criadoEm   DateTime                @default(now()) @map("criado_em")
+  modulo     ModuloEad               @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  questoes   Questao[]
+  tentativas TentativaQuestionario[]
+
+  @@map("questionarios")
+}
+
+model Questao {
+  id              Int          @id @default(autoincrement())
+  questionarioId  Int          @map("questionario_id")
+  enunciado       String
+  tipo            String       @default("multipla") // multipla | vf | dissertativa
+  opcoes          Json? // ["a","b","c"] p/ múltipla
+  respostaCorreta String?      @map("resposta_correta")
+  peso            Decimal      @default(1) @db.Decimal(4, 2)
+  ordem           Int          @default(0)
+  questionario    Questionario @relation(fields: [questionarioId], references: [id], onDelete: Cascade)
+
+  @@index([questionarioId, ordem])
+  @@map("questoes")
+}
+
+model TentativaQuestionario {
+  id             Int          @id @default(autoincrement())
+  questionarioId Int          @map("questionario_id")
+  alunoId        Int          @map("aluno_id")
+  nota           Decimal?     @db.Decimal(4, 2)
+  respostas      Json // { questaoId: resposta }
+  criadoEm       DateTime     @default(now()) @map("criado_em")
+  questionario   Questionario @relation(fields: [questionarioId], references: [id], onDelete: Cascade)
+  aluno          Aluno        @relation(fields: [alunoId], references: [id])
+
+  @@index([questionarioId, alunoId])
+  @@map("tentativas_questionario")
+}
+
+model Forum {
+  id       Int         @id @default(autoincrement())
+  cursoId  Int         @map("curso_id")
+  titulo   String
+  criadoEm DateTime    @default(now()) @map("criado_em")
+  curso    Curso       @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  posts    PostForum[]
+
+  @@map("foruns")
+}
+
+model PostForum {
+  id          Int         @id @default(autoincrement())
+  forumId     Int         @map("forum_id")
+  autorUserId String      @map("autor_user_id")
+  mensagem    String
+  parentId    Int?        @map("parent_id")
+  criadoEm    DateTime    @default(now()) @map("criado_em")
+  forum       Forum       @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  parent      PostForum?  @relation("PostReplies", fields: [parentId], references: [id])
+  respostas   PostForum[] @relation("PostReplies")
+
+  @@index([forumId])
+  @@map("posts_forum")
+}
+
+model EntregaAtividade {
+  id          Int      @id @default(autoincrement())
+  aulaId      Int      @map("aula_id")
+  alunoId     Int      @map("aluno_id")
+  texto       String?
+  documentoId String?  @map("documento_id")
+  nota        Decimal? @db.Decimal(4, 2)
+  feedback    String?
+  status      String   @default("enviada") // enviada | corrigida
+  criadoEm    DateTime @default(now()) @map("criado_em")
+  aula        AulaEad  @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  aluno       Aluno    @relation(fields: [alunoId], references: [id])
+
+  @@unique([aulaId, alunoId])
+  @@map("entregas_atividade")
+}
+
+// ── Fase 5: Processo Seletivo ───────────────────────────────────────────────
+
+model ProcessoSeletivo {
+  id              Int         @id @default(autoincrement())
+  nome            String
+  descricao       String?
+  vagas           Int         @default(0)
+  inscricaoInicio DateTime    @map("inscricao_inicio") @db.Date
+  inscricaoFim    DateTime    @map("inscricao_fim") @db.Date
+  dataProva       DateTime?   @map("data_prova") @db.Date
+  taxaInscricao   Decimal     @default(0) @map("taxa_inscricao") @db.Decimal(10, 2)
+  status          String      @default("aberto") // aberto | encerrado | resultado
+  criadoEm        DateTime    @default(now()) @map("criado_em")
+  inscricoes      Inscricao[]
+
+  @@map("processos_seletivos")
+}
+
+model Inscricao {
+  id                Int              @id @default(autoincrement())
+  processoId        Int              @map("processo_id")
+  nome              String
+  cpf               String
+  email             String
+  telefone          String?
+  cursoPretendidoId Int?             @map("curso_pretendido_id")
+  isento            Boolean          @default(false)
+  pagamentoStatus   String           @default("pendente") @map("pagamento_status") // pendente | pago | isento
+  nota              Decimal?         @db.Decimal(5, 2)
+  classificacao     Int?
+  // inscrito | aprovado | reprovado | convocado | matriculado
+  status            String           @default("inscrito")
+  alunoId           Int?             @map("aluno_id") // preenchido na matrícula automática
+  criadoEm          DateTime         @default(now()) @map("criado_em")
+  processo          ProcessoSeletivo @relation(fields: [processoId], references: [id], onDelete: Cascade)
+
+  @@index([processoId, status])
+  @@map("inscricoes")
+}
+
+// ── Fase 6: Biblioteca ──────────────────────────────────────────────────────
+
+model Titulo {
+  id        Int        @id @default(autoincrement())
+  titulo    String
+  autor     String?
+  isbn      String?
+  editora   String?
+  ano       Int?
+  categoria String?
+  criadoEm  DateTime   @default(now()) @map("criado_em")
+  exemplares Exemplar[]
+  reservas  Reserva[]
+
+  @@map("titulos")
+}
+
+model Exemplar {
+  id          Int          @id @default(autoincrement())
+  tituloId    Int          @map("titulo_id")
+  codigo      String       @unique // usado no QR Code
+  status      String       @default("disponivel") // disponivel | emprestado | reservado | manutencao
+  localizacao String?
+  criadoEm    DateTime     @default(now()) @map("criado_em")
+  titulo      Titulo       @relation(fields: [tituloId], references: [id], onDelete: Cascade)
+  emprestimos Emprestimo[]
+
+  @@index([tituloId])
+  @@map("exemplares")
+}
+
+model Emprestimo {
+  id             Int       @id @default(autoincrement())
+  exemplarId     Int       @map("exemplar_id")
+  alunoId        Int       @map("aluno_id")
+  dataEmprestimo DateTime  @default(now()) @map("data_emprestimo")
+  dataPrevista   DateTime  @map("data_prevista") @db.Date
+  dataDevolucao  DateTime? @map("data_devolucao")
+  status         String    @default("aberto") // aberto | devolvido | atrasado
+  exemplar       Exemplar  @relation(fields: [exemplarId], references: [id])
+  aluno          Aluno     @relation(fields: [alunoId], references: [id])
+  multa          Multa?
+
+  @@index([alunoId, status])
+  @@map("emprestimos")
+}
+
+model Reserva {
+  id       Int      @id @default(autoincrement())
+  tituloId Int      @map("titulo_id")
+  alunoId  Int      @map("aluno_id")
+  status   String   @default("ativa") // ativa | atendida | cancelada
+  criadoEm DateTime @default(now()) @map("criado_em")
+  titulo   Titulo   @relation(fields: [tituloId], references: [id], onDelete: Cascade)
+  aluno    Aluno    @relation(fields: [alunoId], references: [id])
+
+  @@index([tituloId, status])
+  @@map("reservas")
+}
+
+model Multa {
+  id           Int        @id @default(autoincrement())
+  emprestimoId Int        @unique @map("emprestimo_id")
+  valor        Decimal    @db.Decimal(10, 2)
+  paga         Boolean    @default(false)
+  criadoEm     DateTime   @default(now()) @map("criado_em")
+  emprestimo   Emprestimo @relation(fields: [emprestimoId], references: [id], onDelete: Cascade)
+
+  @@map("multas")
+}
+
+// ── Fase 6: Comunicação (broadcasts WhatsApp/e-mail) ─────────────────────────
+
+model Comunicado {
+  id           Int      @id @default(autoincrement())
+  titulo       String
+  mensagem     String
+  canal        String   @default("notificacao") // notificacao | whatsapp | email
+  destinatarios Int     @default(0) // quantos receberam
+  status       String   @default("enviado") // enviado | falhou | parcial
+  criadoEm     DateTime @default(now()) @map("criado_em")
+
+  @@map("comunicados")
+}
+
+// Requerimento/protocolo: aluno solicita documento/serviço; secretaria atende.
+model Requerimento {
+  id                Int      @id @default(autoincrement())
+  alunoId           Int      @map("aluno_id")
+  protocolo         String   @unique // ex: REQ-2026-000123
+  // declaracao_matricula | historico | declaracao_conclusao | segunda_via_boletim | revisao_nota | outro
+  tipo              String
+  descricao         String?
+  // aberto | em_andamento | concluido | indeferido
+  status            String   @default("aberto")
+  resposta          String? // retorno da secretaria
+  atendidoPorUserId String?  @map("atendido_por_user_id")
+  criadoEm          DateTime @default(now()) @map("criado_em")
+  atualizadoEm      DateTime @default(now()) @updatedAt @map("atualizado_em")
+  aluno             Aluno    @relation(fields: [alunoId], references: [id])
+
+  @@index([status])
+  @@index([alunoId])
+  @@map("requerimentos")
+}
+
+// Responsável/pai — acessa o portal para acompanhar o(s) filho(s).
+model Responsavel {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  cpf        String?  @unique
+  email      String   @unique
+  telefone   String?
+  parentesco String   @default("responsavel") // pai | mae | responsavel
+  criadoEm   DateTime @default(now()) @map("criado_em")
+  alunos     Aluno[] // m2m: um responsável acompanha vários alunos
+  usuario    User?
+
+  @@map("responsaveis")
+}
+
+// Ocorrência disciplinar/registro do aluno.
+model Ocorrencia {
+  id                 Int      @id @default(autoincrement())
+  alunoId            Int      @map("aluno_id")
+  tipo               String // advertencia | elogio | observacao | suspensao
+  gravidade          String   @default("media") // baixa | media | alta
+  descricao          String
+  data               DateTime @db.Date
+  registradoPorUserId String? @map("registrado_por_user_id")
+  criadoEm           DateTime @default(now()) @map("criado_em")
+  aluno              Aluno    @relation(fields: [alunoId], references: [id])
+
+  @@index([alunoId])
+  @@map("ocorrencias")
+}
+
+// Plano de contas (categorias de receita/despesa).
+model PlanoConta {
+  id       Int          @id @default(autoincrement())
+  codigo   String?
+  nome     String
+  tipo     String // receita | despesa
+  ativo    Boolean      @default(true)
+  criadoEm DateTime     @default(now()) @map("criado_em")
+  contas   ContaPagar[]
+
+  @@map("planos_conta")
+}
+
+// Conta a pagar (despesa da instituição).
+model ContaPagar {
+  id            Int         @id @default(autoincrement())
+  descricao     String
+  valor         Decimal     @db.Decimal(10, 2)
+  vencimento    DateTime    @db.Date
+  dataPagamento DateTime?   @map("data_pagamento") @db.Date
+  status        String      @default("pendente") // pendente | pago | vencido | cancelado
+  fornecedor    String?
+  planoContaId  Int?        @map("plano_conta_id")
+  observacoes   String?
+  criadoEm      DateTime    @default(now()) @map("criado_em")
+  planoConta    PlanoConta? @relation(fields: [planoContaId], references: [id])
+
+  @@index([status])
+  @@index([vencimento])
+  @@map("contas_pagar")
+}
+
+// Rematrícula: aluno solicita renovar matrícula p/ o próximo período; secretaria aprova.
+model Rematricula {
+  id                 Int      @id @default(autoincrement())
+  alunoId            Int      @map("aluno_id")
+  turmaDestinoId     Int      @map("turma_destino_id")
+  periodoLetivo      String   @map("periodo_letivo") // ex: "2026.2"
+  status             String   @default("solicitada") // solicitada | aprovada | recusada
+  observacao         String?
+  processadaPorUserId String? @map("processada_por_user_id")
+  criadoEm           DateTime @default(now()) @map("criado_em")
+  aluno              Aluno    @relation(fields: [alunoId], references: [id])
+  turmaDestino       Turma    @relation(fields: [turmaDestinoId], references: [id])
+
+  @@index([status])
+  @@map("rematriculas")
+}
+
+// Mural de avisos (quadro persistente por público-alvo).
+model Aviso {
+  id          Int       @id @default(autoincrement())
+  titulo      String
+  conteudo    String
+  publico     String    @default("todos") // todos | alunos | professores | responsaveis
+  fixado      Boolean   @default(false)
+  ativo       Boolean   @default(true)
+  autorUserId String?   @map("autor_user_id")
+  expiraEm    DateTime? @map("expira_em") @db.Date
+  criadoEm    DateTime  @default(now()) @map("criado_em")
+
+  @@index([publico, ativo])
+  @@map("avisos")
+}
+
+// Auth.js — usuários do sistema (login). Papel via string (matriz de RBAC em @/lib/rbac).
+model User {
+  id             String     @id @default(cuid())
+  nome           String
+  email          String     @unique
+  cpf            String?    @unique
+  matricula      String?    @unique
+  telefone       String?
+  senhaHash      String     @map("senha_hash")
+  papel          String     @default("secretaria")
+  ativo          Boolean    @default(true)
+  // MFA (TOTP) — habilitado numa fatia posterior.
+  mfaSecret      String?    @map("mfa_secret")
+  mfaEnabled     Boolean    @default(false) @map("mfa_enabled")
+  recoveryCodes  String[]   @default([]) @map("recovery_codes")
+  // Vínculo do login com o registro de domínio (portais Aluno/Professor/Responsável).
+  alunoId        Int?         @unique @map("aluno_id")
+  professorId    Int?         @unique @map("professor_id")
+  responsavelId  Int?         @unique @map("responsavel_id")
+  criadoEm       DateTime     @default(now()) @map("criado_em")
+  aluno          Aluno?       @relation(fields: [alunoId], references: [id])
+  professor      Professor?   @relation(fields: [professorId], references: [id])
+  responsavel    Responsavel? @relation(fields: [responsavelId], references: [id])
+  sessions       Session[]
+  auditLogs      AuditLog[]
+  notificacoes   Notificacao[]
+
+  @@map("users")
+}
+
+// Notificação in-app (push via SSE). ponytail: SSE cobre server→client; socket.io fica p/ EAD (bidirecional).
+model Notificacao {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  titulo    String
+  mensagem  String
+  tipo      String   @default("info") // info | sucesso | alerta | erro
+  link      String?
+  lida      Boolean  @default(false)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lida])
+  @@map("notificacoes")
+}
+
+// Sessões persistidas — permite listar/revogar dispositivos ("sair de todos").
+model Session {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  sessionToken String   @unique @map("session_token")
+  userAgent    String?  @map("user_agent")
+  ip           String?
+  expiresAt    DateTime @map("expires_at")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Token de recuperação de senha (expira, uso único).
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  usado     Boolean  @default(false)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Documento digitalizado (upload local na aplicação).
+model Documento {
+  id           String   @id @default(cuid())
+  nome         String // nome original do arquivo
+  tipo         String // categoria: rg, cpf, contrato, foto, comprovante...
+  path         String // caminho relativo no storage local
+  mime         String
+  tamanho      Int
+  donoTipo     String   @map("dono_tipo") // "Aluno" | "Professor" | "Funcionario"...
+  donoId       String   @map("dono_id")
+  uploadedById String?  @map("uploaded_by_id")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+
+  @@index([donoTipo, donoId])
+  @@map("documentos")
+}
+
+// Trilha de auditoria de operações de escrita.
+model AuditLog {
+  id       Int      @id @default(autoincrement())
+  userId   String?  @map("user_id")
+  acao     String // ex: "aluno:create"
+  recurso  String // ex: "Aluno"
+  recursoId String? @map("recurso_id")
+  antes    Json?
+  depois   Json?
+  ip       String?
+  criadoEm DateTime @default(now()) @map("criado_em")
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([recurso, recursoId])
+  @@index([userId])
+  @@map("audit_logs")
+}

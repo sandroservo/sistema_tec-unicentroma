@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "grupo": "Menu Principal",
+    "dashboard": "Dashboard",
+    "alunos": "Alunos",
+    "professores": "Professores",
+    "cursos": "Cursos",
+    "turmas": "Turmas",
+    "disciplinas": "Disciplinas",
+    "salas": "Salas",
+    "calendario": "Calendário",
+    "matriculas": "Matrículas",
+    "diario": "Diário",
+    "frequencia": "Frequência",
+    "notas": "Notas",
+    "avaliacoes": "Avaliações",
+    "financeiro": "Financeiro",
+    "contratos": "Contratos",
+    "inadimplencia": "Inadimplência",
+    "bolsas": "Bolsas",
+    "convenios": "Convênios",
+    "ead": "EAD",
+    "selecao": "Processo Seletivo",
+    "biblioteca": "Biblioteca",
+    "comunicados": "Comunicados",
+    "integracoes": "Integrações",
+    "certificados": "Certificados",
+    "usuarios": "Usuários",
+    "seguranca": "Segurança",
+    "sair": "Sair",
+    "requerimentos": "Requerimentos",
+    "ocorrencias": "Ocorrências",
+    "contasPagar": "Contas a Pagar",
+    "responsaveis": "Responsáveis",
+    "planoContas": "Plano de Contas",
+    "fluxoCaixa": "Fluxo de Caixa",
+    "rematriculas": "Rematrículas",
+    "avisos": "Mural de Avisos"
+  },
+  "app": {
+    "titulo": "ERP Escola",
+    "subtitulo": "Sistema de Gestão"
+  },
+  "idioma": {
+    "label": "Idioma",
+    "pt-BR": "Português",
+    "en": "Inglês"
+  },
+  "grupos": {
+    "academico": "Acadêmico",
+    "pedagogico": "Pedagógico",
+    "financeiro": "Financeiro",
+    "atendimento": "Atendimento",
+    "comunicacao": "Comunicação",
+    "configuracoes": "Configurações"
+  }
+}

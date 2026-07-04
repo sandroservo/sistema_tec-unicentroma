@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "grupo": "Main Menu",
+    "dashboard": "Dashboard",
+    "alunos": "Students",
+    "professores": "Teachers",
+    "cursos": "Courses",
+    "turmas": "Classes",
+    "disciplinas": "Subjects",
+    "salas": "Rooms",
+    "calendario": "Calendar",
+    "matriculas": "Enrollments",
+    "diario": "Class Journal",
+    "frequencia": "Attendance",
+    "notas": "Grades",
+    "avaliacoes": "Assessments",
+    "financeiro": "Finance",
+    "contratos": "Contracts",
+    "inadimplencia": "Overdue",
+    "bolsas": "Scholarships",
+    "convenios": "Partnerships",
+    "ead": "E-learning",
+    "selecao": "Admissions",
+    "biblioteca": "Library",
+    "comunicados": "Announcements",
+    "integracoes": "Integrations",
+    "certificados": "Certificates",
+    "usuarios": "Users",
+    "seguranca": "Security",
+    "sair": "Sign out",
+    "requerimentos": "Requests",
+    "ocorrencias": "Incidents",
+    "contasPagar": "Payables",
+    "responsaveis": "Guardians",
+    "planoContas": "Chart of Accounts",
+    "fluxoCaixa": "Cash Flow",
+    "rematriculas": "Re-enrollment",
+    "avisos": "Bulletin Board"
+  },
+  "app": {
+    "titulo": "School ERP",
+    "subtitulo": "Management System"
+  },
+  "idioma": {
+    "label": "Language",
+    "pt-BR": "Portuguese",
+    "en": "English"
+  },
+  "grupos": {
+    "academico": "Academic",
+    "pedagogico": "Teaching",
+    "financeiro": "Finance",
+    "atendimento": "Front Desk",
+    "comunicacao": "Communication",
+    "configuracoes": "Settings"
+  }
+}
