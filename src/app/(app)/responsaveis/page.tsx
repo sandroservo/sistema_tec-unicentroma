@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { Plus, Eye, Edit } from "lucide-react";
 import { usePagination } from "@/hooks/use-pagination";
 import { PaginationBar } from "@/components/pagination-bar";
 
@@ -44,12 +44,13 @@ export default function ResponsaveisList() {
               <TableHead>Email</TableHead>
               <TableHead>Parentesco</TableHead>
               <TableHead className="text-right">Alunos</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   Carregando…
                 </TableCell>
               </TableRow>
@@ -60,11 +61,21 @@ export default function ResponsaveisList() {
                   <TableCell>{r.email}</TableCell>
                   <TableCell>{PARENTESCO[r.parentesco] ?? r.parentesco}</TableCell>
                   <TableCell className="text-right">{r.numAlunos}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" asChild title="Visualizar">
+                        <Link href={`/responsaveis/${r.id}`}><Eye className="w-4 h-4" /></Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild title="Editar">
+                        <Link href={`/responsaveis/${r.id}/editar`}><Edit className="w-4 h-4" /></Link>
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   Nenhum responsável cadastrado.
                 </TableCell>
               </TableRow>
