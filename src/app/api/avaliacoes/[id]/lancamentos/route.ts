@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -43,6 +44,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
     const avaliacaoId = parseInt(id);
+
+    const avaliacao = await prisma.avaliacao.findUnique({ where: { id: avaliacaoId }, select: { turmaId: true } });
+    if (!avaliacao) return NextResponse.json({ error: "Avaliação não encontrada" }, { status: 404 });
+    const escopo = await assertProfessorTurma(avaliacao.turmaId);
+    if (escopo) return escopo;
 
     const parsed = putSchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });

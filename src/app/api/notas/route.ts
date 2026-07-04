@@ -4,6 +4,7 @@ import { notaDTO } from "@/lib/dto";
 import { calcularMedia, calcularSituacao } from "@/lib/notas";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 
 export async function GET(req: Request) {
   try {
@@ -53,6 +54,8 @@ export async function POST(req: Request) {
     if (guard instanceof NextResponse) return guard;
 
     const body = await req.json();
+    const escopo = await assertProfessorTurma(body.turmaId);
+    if (escopo) return escopo;
     const n1 = body.nota1 != null ? String(body.nota1) : null;
     const n2 = body.nota2 != null ? String(body.nota2) : null;
     const n3 = body.nota3 != null ? String(body.nota3) : null;

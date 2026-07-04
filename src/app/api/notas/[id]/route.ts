@@ -5,6 +5,7 @@ import { decStr } from "@/lib/serialize";
 import { calcularMedia, calcularSituacao } from "@/lib/notas";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -13,6 +14,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { id } = await params;
     const existing = await prisma.nota.findUnique({ where: { id: parseInt(id) } });
     if (!existing) return NextResponse.json({ error: "Nota não encontrada" }, { status: 404 });
+    const escopo = await assertProfessorTurma(existing.turmaId);
+    if (escopo) return escopo;
     const body = await req.json();
     const n1 = body.nota1 != null ? String(body.nota1) : decStr(existing.nota1);
     const n2 = body.nota2 != null ? String(body.nota2) : decStr(existing.nota2);
@@ -49,6 +52,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const guard = await requirePermission("nota:lancar");
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
+    const existing = await prisma.nota.findUnique({ where: { id: parseInt(id) }, select: { turmaId: true } });
+    if (existing) {
+      const escopo = await assertProfessorTurma(existing.turmaId);
+      if (escopo) return escopo;
+    }
     await prisma.nota.deleteMany({ where: { id: parseInt(id) } });
     await logAudit({ acao: "nota:delete", recurso: "Nota", recursoId: id });
     return new NextResponse(null, { status: 204 });

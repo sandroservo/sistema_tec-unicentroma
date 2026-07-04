@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 import { z } from "zod";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -53,6 +54,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
     const aulaId = parseInt(id);
+
+    const aula = await prisma.aula.findUnique({ where: { id: aulaId }, select: { turmaId: true } });
+    if (!aula) return NextResponse.json({ error: "Aula não encontrada" }, { status: 404 });
+    const escopo = await assertProfessorTurma(aula.turmaId);
+    if (escopo) return escopo;
 
     const parsed = putSchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues }, { status: 400 });

@@ -77,7 +77,7 @@ Duas gerações convivendo: **Cobranças legadas** (Fase 0, contrato JSON do Exp
 ## Débitos
 - Nenhum job marca `vencido` em Cobranca/Parcela (status persiste `pendente`); só ContaPagar deriva no read. `resumo.totalVencido/inadimplentes` dependem de status `vencido` que nada seta automaticamente.
 - Fluxo de caixa filtra por `vencimento >= inicio` mas bucketiza por `dataPagamento` — pagamento recente de parcela antiga fica fora; pagamento com bucket fora da janela é descartado em silêncio.
-- PATCH de cobrança, bolsa e convênio aceitam body sem validação zod (spread).
+- ~~PATCH de cobrança, bolsa e convênio aceitam body sem validação zod (spread).~~ CORRIGIDO: PATCHs de cobrança, bolsa e convênio validam body com zod parcial (campos allowlisted; body inválido → 400); side-effects (status "pago" → Atividade, tipo integral → percentual 100) preservados.
 - PIX é stub e não persiste txid; NF-e e conciliação retornam 501.
 - DELETE de contrato/bolsa/convênio é hard-delete (contrato leva as parcelas junto, mesmo pagas).
 - `Renegociacao.contratoOrigemId` assume que todas as parcelas vêm do mesmo contrato (usa o da primeira).

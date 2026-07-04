@@ -50,20 +50,32 @@ export async function POST(req: Request) {
     if (guard instanceof NextResponse) return guard;
 
     const body = await req.json();
-    const matricula = await prisma.matricula.create({
-      data: {
-        alunoId: body.alunoId,
-        turmaId: body.turmaId,
-        status: "ativa",
-        observacoes: body.observacoes ?? null,
-      },
-    });
-    await prisma.turma.update({
-      where: { id: body.turmaId },
-      data: { vagasOcupadas: { increment: 1 } },
-    });
-    const aluno = await prisma.aluno.findUnique({ where: { id: body.alunoId } });
+
     const turma = await prisma.turma.findUnique({ where: { id: body.turmaId } });
+    if (!turma) return NextResponse.json({ error: "Turma não encontrada" }, { status: 404 });
+    if (turma.vagasOcupadas >= turma.vagas)
+      return NextResponse.json({ error: "Turma sem vagas disponíveis" }, { status: 409 });
+    const jaMatriculado = await prisma.matricula.findFirst({
+      where: { alunoId: body.alunoId, turmaId: body.turmaId, status: "ativa" },
+    });
+    if (jaMatriculado)
+      return NextResponse.json({ error: "Aluno já matriculado nesta turma" }, { status: 409 });
+
+    const [matricula] = await prisma.$transaction([
+      prisma.matricula.create({
+        data: {
+          alunoId: body.alunoId,
+          turmaId: body.turmaId,
+          status: "ativa",
+          observacoes: body.observacoes ?? null,
+        },
+      }),
+      prisma.turma.update({
+        where: { id: body.turmaId },
+        data: { vagasOcupadas: { increment: 1 } },
+      }),
+    ]);
+    const aluno = await prisma.aluno.findUnique({ where: { id: body.alunoId } });
     await prisma.atividade.create({
       data: {
         tipo: "matricula",

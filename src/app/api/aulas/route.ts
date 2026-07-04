@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { dateOnly, toDate } from "@/lib/serialize";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 import { z } from "zod";
 
 const flatten = (a: {
@@ -58,6 +59,9 @@ export async function POST(req: Request) {
 
     const parsed = createSchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues }, { status: 400 });
+
+    const escopo = await assertProfessorTurma(parsed.data.turmaId);
+    if (escopo) return escopo;
 
     const aula = await prisma.aula.create({
       data: {

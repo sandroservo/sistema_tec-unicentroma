@@ -66,7 +66,7 @@ Todas as escritas auditam via `logAudit`.
 - Identificação de aluno/professor no login vem do `User.alunoId/professorId` (spec 01), não do e-mail.
 
 ## Débitos
-- `POST /api/matriculas` **não valida vagas nem duplicidade** (aluno pode ser matriculado 2x na mesma turma; turma lotada aceita); increment de vagas fora de transação. Rematrícula valida, matrícula direta não.
+- ~~`POST /api/matriculas` **não valida vagas nem duplicidade** (aluno pode ser matriculado 2x na mesma turma; turma lotada aceita); increment de vagas fora de transação. Rematrícula valida, matrícula direta não.~~ CORRIGIDO: valida turma (404), vagas (409 "Turma sem vagas disponíveis") e duplicidade de matrícula ativa (409 "Aluno já matriculado nesta turma"); criação + increment de `vagasOcupadas` em `$transaction`.
 - Sem cancelamento de matrícula (nenhum DELETE; PATCH de status não decrementa `vagasOcupadas`).
 - Hard delete em professores, cursos, turmas, disciplinas, salas (soft-delete só em Aluno) — FK constraint estoura com histórico.
 - Páginas de edição faltam: professores, turmas, disciplinas, salas, responsáveis (padrão pronto em `/alunos/[id]/editar` e `/cursos/[id]/editar`).

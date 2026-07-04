@@ -4,6 +4,7 @@ import { cobrancaDTO } from "@/lib/dto";
 import { toDate } from "@/lib/serialize";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { z } from "zod";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,17 +36,34 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
+const patchSchema = z.object({
+  descricao: z.string().min(1).optional(),
+  valor: z.number().optional(),
+  vencimento: z.string().optional(),
+  dataPagamento: z.string().nullable().optional(),
+  status: z.enum(["pendente", "pago", "vencido", "cancelado"]).optional(),
+  metodoPagamento: z.string().nullable().optional(),
+  observacoes: z.string().nullable().optional(),
+});
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requirePermission("cobranca:editar");
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
     const antes = await prisma.cobranca.findUnique({ where: { id: parseInt(id) } });
-    const body = await req.json();
-    const data = { ...body };
-    if ("vencimento" in data) data.vencimento = toDate(data.vencimento);
-    if ("dataPagamento" in data) data.dataPagamento = toDate(data.dataPagamento);
-    if (data.valor !== undefined) data.valor = String(data.valor);
+    const parsed = patchSchema.safeParse(await req.json());
+    if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+    const body = parsed.data;
+
+    const data: Record<string, unknown> = {};
+    if (body.descricao !== undefined) data.descricao = body.descricao;
+    if (body.valor !== undefined) data.valor = String(body.valor);
+    if (body.vencimento !== undefined) data.vencimento = toDate(body.vencimento);
+    if (body.dataPagamento !== undefined) data.dataPagamento = toDate(body.dataPagamento);
+    if (body.status !== undefined) data.status = body.status;
+    if (body.metodoPagamento !== undefined) data.metodoPagamento = body.metodoPagamento;
+    if (body.observacoes !== undefined) data.observacoes = body.observacoes;
 
     const cobranca = await prisma.cobranca.update({ where: { id: parseInt(id) }, data });
 

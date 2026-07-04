@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { z } from "zod";
 
 type Row = Record<string, any>;
 const convenioDTO = (c: Row) => ({ ...c, percentualDesconto: Number(c.percentualDesconto) });
@@ -19,14 +20,22 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
+const patchSchema = z.object({
+  nome: z.string().min(1).optional(),
+  empresa: z.string().min(1).optional(),
+  percentualDesconto: z.number().min(0).max(100).optional(),
+  ativo: z.boolean().optional(),
+});
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requirePermission("cobranca:editar");
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
     const antes = await prisma.convenio.findUnique({ where: { id: parseInt(id) } });
-    const body = await req.json();
-    const convenio = await prisma.convenio.update({ where: { id: parseInt(id) }, data: { ...body } });
+    const parsed = patchSchema.safeParse(await req.json());
+    if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+    const convenio = await prisma.convenio.update({ where: { id: parseInt(id) }, data: parsed.data });
     await logAudit({
       acao: "convenio:update",
       recurso: "Convenio",

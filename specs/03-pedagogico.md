@@ -56,7 +56,7 @@ Diário eletrônico (aulas + chamada), frequência com % e risco, notas legadas 
 - `GET /api/turmas/[id]/medias` **não tem consumidor na UI admin** (só portais usam a variante `_media.ts`); não há tela de boletim consolidado por turma.
 - Duas fontes de nota coexistem: `Nota` legada (tela `/notas`, PDFs) e Avaliacao/LancamentoNota (portais). Não se comunicam — portal ignora notas legadas.
 - Aluno sem chamada lançada tem 0 registros → percentual 0% (aparece em risco mesmo sem chamada feita); default "presente" só existe no GET de presenças, não vira registro.
-- Rotas admin de aula/nota/avaliação não são escopadas por professor (professor com `aula:*`/`nota:lancar` edita aula/nota de qualquer turma; escopo só existe no portal professor via `api/portal/professor/_scope.ts`).
+- ~~Rotas admin de aula/nota/avaliação não são escopadas por professor (professor com `aula:*`/`nota:lancar` edita aula/nota de qualquer turma; escopo só existe no portal professor via `api/portal/professor/_scope.ts`).~~ CORRIGIDO: `assertProfessorTurma` (`src/lib/professorScope.ts`, reusa `turmasWhere` do `_scope.ts`) aplicado após o guard de permissão nas mutações de aulas, presenças, avaliações, lançamentos e notas — papel "professor" só muta turmas do seu escopo (403 fora dele); GETs e demais papéis inalterados.
 - `PATCH /api/notas/[id]` não permite **limpar** uma nota (null mantém valor existente).
 - `Ocorrencia.registradoPorUserId` sem FK/relation; não exposto nas listagens.
 - TODOs de sidebar (comentários nos pages): Diário, Frequência e Avaliações sem link no app-sidebar.

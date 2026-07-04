@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { dateOnly, toDate } from "@/lib/serialize";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 
 const TIPOS = ["prova", "trabalho", "seminario", "atividade", "pratica", "recuperacao", "segunda_chamada"] as const;
 
@@ -53,6 +54,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
 
+    const existing = await prisma.avaliacao.findUnique({ where: { id: parseInt(id) }, select: { turmaId: true } });
+    if (!existing) return NextResponse.json({ error: "Avaliação não encontrada" }, { status: 404 });
+    const escopo = await assertProfessorTurma(existing.turmaId);
+    if (escopo) return escopo;
+
     const parsed = patchSchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     const b = parsed.data;
@@ -82,6 +88,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const guard = await requirePermission("nota:lancar");
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
+    const existing = await prisma.avaliacao.findUnique({ where: { id: parseInt(id) }, select: { turmaId: true } });
+    if (existing) {
+      const escopo = await assertProfessorTurma(existing.turmaId);
+      if (escopo) return escopo;
+    }
     // lancamentos removidos por cascade (onDelete: Cascade no schema)
     await prisma.avaliacao.deleteMany({ where: { id: parseInt(id) } });
     await logAudit({ acao: "avaliacao:delete", recurso: "Avaliacao", recursoId: id });

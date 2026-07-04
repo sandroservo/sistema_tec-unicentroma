@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { dateOnly, toDate } from "@/lib/serialize";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 
 const TIPOS = ["prova", "trabalho", "seminario", "atividade", "pratica", "recuperacao", "segunda_chamada"] as const;
 
@@ -64,6 +65,9 @@ export async function POST(req: Request) {
     const parsed = createSchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     const b = parsed.data;
+
+    const escopo = await assertProfessorTurma(b.turmaId);
+    if (escopo) return escopo;
 
     const avaliacao = await prisma.avaliacao.create({
       data: {

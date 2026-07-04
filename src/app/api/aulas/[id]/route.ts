@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { dateOnly, toDate } from "@/lib/serialize";
 import { requirePermission } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
+import { assertProfessorTurma } from "@/lib/professorScope";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -45,7 +46,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const guard = await requirePermission("aula:editar");
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
+    const existing = await prisma.aula.findUnique({ where: { id: parseInt(id) }, select: { turmaId: true } });
+    if (!existing) return NextResponse.json({ error: "Aula não encontrada" }, { status: 404 });
+    const escopo = await assertProfessorTurma(existing.turmaId);
+    if (escopo) return escopo;
     const body = await req.json();
+    if ("turmaId" in body && body.turmaId !== existing.turmaId) {
+      const escopoNova = await assertProfessorTurma(body.turmaId);
+      if (escopoNova) return escopoNova;
+    }
     const data: Record<string, unknown> = {};
     if ("turmaId" in body) data.turmaId = body.turmaId;
     if ("disciplinaId" in body) data.disciplinaId = body.disciplinaId;
@@ -67,6 +76,11 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const guard = await requirePermission("aula:excluir");
     if (guard instanceof NextResponse) return guard;
     const { id } = await params;
+    const existing = await prisma.aula.findUnique({ where: { id: parseInt(id) }, select: { turmaId: true } });
+    if (existing) {
+      const escopo = await assertProfessorTurma(existing.turmaId);
+      if (escopo) return escopo;
+    }
     await prisma.aula.deleteMany({ where: { id: parseInt(id) } });
     await logAudit({ acao: "aula:delete", recurso: "Aula", recursoId: id });
     return new NextResponse(null, { status: 204 });
