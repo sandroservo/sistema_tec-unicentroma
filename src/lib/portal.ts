@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/authz";
+import { hasPermission } from "@/lib/rbac";
 
 /** id do Aluno vinculado ao usuário logado (ou null). */
 export async function currentAlunoId(): Promise<number | null> {
@@ -53,6 +54,20 @@ export async function currentResponsavelAlunoIds(): Promise<number[]> {
     select: { alunos: { select: { id: true } } },
   });
   return resp?.alunos.map((a) => a.id) ?? [];
+}
+
+/**
+ * Pode acessar dados do aluno `alunoId`? true se:
+ * papel com permissão administrativa (aluno:ler), OU o próprio aluno, OU responsável vinculado.
+ * Guard para recursos "por aluno" compartilhados entre admin e portais (ex: PDFs).
+ */
+export async function canAccessAluno(alunoId: number): Promise<boolean> {
+  const u = await currentUser();
+  if (!u) return false;
+  if (hasPermission(u.papel, "aluno:ler")) return true;
+  if ((await currentAlunoId()) === alunoId) return true;
+  const idsResp = await currentResponsavelAlunoIds();
+  return idsResp.includes(alunoId);
 }
 
 /** Guard de route handler do portal do responsável: {responsavelId, alunoIds} ou 401/403. */

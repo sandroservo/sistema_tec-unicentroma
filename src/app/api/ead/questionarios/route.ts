@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requirePermission } from "@/lib/authz";
+import { requirePermission, currentUser } from "@/lib/authz";
 import { logAudit } from "@/lib/audit";
 
 const createSchema = z.object({
@@ -22,8 +22,9 @@ function dto(q: { id: number; moduloId: number; titulo: string; notaMinima: unkn
 
 export async function GET(req: Request) {
   try {
-    const guard = await requirePermission("ead:ler");
-    if (guard instanceof NextResponse) return guard;
+    // Qualquer logado (aluno responde quiz no player; gabarito não está neste payload).
+    const user = await currentUser();
+    if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     const sp = new URL(req.url).searchParams;
     const moduloId = sp.get("moduloId");
     const where = moduloId ? { moduloId: parseInt(moduloId) } : {};

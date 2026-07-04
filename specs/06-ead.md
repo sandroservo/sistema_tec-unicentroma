@@ -20,7 +20,7 @@ Conteúdo EAD por curso (módulos → aulas), progresso do aluno, questionários
 | GET/PATCH/DELETE `/api/ead/modulos/[id]` | `ead:ler`/`ead:editar`/`ead:excluir` | CRUD módulo. |
 | GET/POST `/api/ead/aulas` | `ead:ler` / `ead:criar` | Lista (filtro `?moduloId`) / cria aula (tipo validado por enum Zod). |
 | GET/PATCH/DELETE `/api/ead/aulas/[id]` | `ead:ler`/`ead:editar`/`ead:excluir` | CRUD aula. |
-| GET/POST `/api/ead/questionarios` | `ead:ler` / `ead:criar` | Lista (filtro `?moduloId`) / cria. Serializa `notaMinima` como number. |
+| GET/POST `/api/ead/questionarios` | logado (GET) / `ead:criar` (POST) | Lista (filtro `?moduloId`) / cria. Serializa `notaMinima` como number. |
 | GET/PATCH/DELETE `/api/ead/questionarios/[id]` | `ead:ler`/`ead:editar`/`ead:excluir` | CRUD questionário. |
 | GET `/api/ead/questoes` | **qualquer logado** (`currentUser`) | Lista questões (filtro `?questionarioId`). **`respostaCorreta` NUNCA é selecionada** — gabarito não vai ao client. |
 | POST `/api/ead/questoes` | `ead:criar` | Cria questão (com gabarito). PATCH/DELETE `[id]`: `ead:editar`/`ead:excluir`. |
@@ -48,7 +48,7 @@ Conteúdo EAD por curso (módulos → aulas), progresso do aluno, questionários
 
 ## Débitos
 - **Aula ao vivo / chat em tempo real (socket.io) não implementado** — exigiria custom server; realtime atual é só SSE de notificações.
-- **Quiz invisível para o aluno**: o player chama GET `/api/ead/questionarios?moduloId=` que exige `ead:ler` — aluno (`portal:aluno`) recebe 403 e o front cai no fallback `[]`. Precisa de endpoint portal ou liberar GET p/ logado (como questoes).
+- ~~Quiz invisível p/ aluno (403 em questionarios)~~ CORRIGIDO: GET questionarios agora exige apenas login.
 - Sem UI admin para questionários/questões, fóruns e correção de entregas (`ead:corrigir`) — APIs existem, telas não.
 - Entrega por arquivo: campo `documentoId` existe mas o player só envia texto (sem upload no form).
 - Sem limite de tentativas nem trava por notaMinima.

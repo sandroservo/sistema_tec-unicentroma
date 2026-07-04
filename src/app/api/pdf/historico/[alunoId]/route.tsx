@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { prisma } from "@/lib/prisma";
-import { requirePermission } from "@/lib/authz";
+import { canAccessAluno } from "@/lib/portal";
 import { HistoricoDoc, type HistoricoItem } from "@/lib/pdf/historico";
 import { calcularMedia, situacao } from "@/lib/pdf/media";
 
 export const runtime = "nodejs";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ alunoId: string }> }) {
-  const guard = await requirePermission("aluno:ler");
-  if (guard instanceof NextResponse) return guard;
-
   const { alunoId: raw } = await params;
   const alunoId = parseInt(raw);
+  // Admin (aluno:ler), o próprio aluno ou responsável vinculado.
+  if (!(await canAccessAluno(alunoId))) {
+    return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  }
 
   const aluno = await prisma.aluno.findUnique({ where: { id: alunoId } });
   if (!aluno) return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
