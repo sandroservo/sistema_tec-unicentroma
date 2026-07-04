@@ -35,7 +35,8 @@
     "planoContas": "Plano de Contas",
     "fluxoCaixa": "Fluxo de Caixa",
     "rematriculas": "Rematrículas",
-    "avisos": "Mural de Avisos"
+    "avisos": "Mural de Avisos",
+    "caixa": "Caixa"
   },
   "app": {
     "titulo": "ERP Escola",

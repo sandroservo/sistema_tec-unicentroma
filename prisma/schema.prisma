@@ -42,6 +42,7 @@ model Aluno {
   ocorrencias    Ocorrencia[]
   responsaveis   Responsavel[]
   rematriculas   Rematricula[]
+  recebimentos   Recebimento[]
 
   @@map("alunos")
 }
@@ -775,6 +776,37 @@ model Aviso {
 
   @@index([publico, ativo])
   @@map("avisos")
+}
+
+// Caixa: recebimento presencial (dinheiro/PIX/cartão na maquineta) que quita cobranças/parcelas.
+model Recebimento {
+  id                Int               @id @default(autoincrement())
+  alunoId           Int               @map("aluno_id")
+  valor             Decimal           @db.Decimal(10, 2) // total quitado
+  metodo            String // dinheiro | pix | cartao_debito | cartao_credito
+  valorRecebido     Decimal?          @map("valor_recebido") @db.Decimal(10, 2) // dinheiro: p/ cálculo de troco
+  observacoes       String?
+  recebidoPorUserId String?           @map("recebido_por_user_id")
+  criadoEm          DateTime          @default(now()) @map("criado_em")
+  aluno             Aluno             @relation(fields: [alunoId], references: [id])
+  itens             RecebimentoItem[]
+
+  @@index([alunoId])
+  @@index([criadoEm])
+  @@map("recebimentos")
+}
+
+// Item quitado num recebimento (cobrança avulsa OU parcela de contrato).
+model RecebimentoItem {
+  id            Int         @id @default(autoincrement())
+  recebimentoId Int         @map("recebimento_id")
+  cobrancaId    Int?        @map("cobranca_id")
+  parcelaId     Int?        @map("parcela_id")
+  descricao     String
+  valor         Decimal     @db.Decimal(10, 2)
+  recebimento   Recebimento @relation(fields: [recebimentoId], references: [id], onDelete: Cascade)
+
+  @@map("recebimento_itens")
 }
 
 // Auth.js — usuários do sistema (login). Papel via string (matriz de RBAC em @/lib/rbac).

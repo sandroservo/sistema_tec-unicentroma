@@ -35,7 +35,8 @@
     "planoContas": "Chart of Accounts",
     "fluxoCaixa": "Cash Flow",
     "rematriculas": "Re-enrollment",
-    "avisos": "Bulletin Board"
+    "avisos": "Bulletin Board",
+    "caixa": "Cashier"
   },
   "app": {
     "titulo": "School ERP",

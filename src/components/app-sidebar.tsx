@@ -103,6 +103,7 @@ const NAV_GROUPS: { g: string; icon: typeof Users; items: NavItem[] }[] = [
     g: "financeiro",
     icon: Landmark,
     items: [
+      { k: "caixa", href: "/caixa", icon: DollarSign, perm: "cobranca:editar" },
       { k: "financeiro", href: "/financeiro", icon: DollarSign, perm: "cobranca:ler" },
       { k: "contratos", href: "/contratos", icon: FileSignature, perm: "cobranca:ler" },
       { k: "inadimplencia", href: "/inadimplencia", icon: AlertTriangle, perm: "cobranca:ler" },

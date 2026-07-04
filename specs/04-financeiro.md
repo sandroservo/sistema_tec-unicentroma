@@ -82,6 +82,30 @@ Duas gerações convivendo: **Cobranças legadas** (Fase 0, contrato JSON do Exp
 - DELETE de contrato/bolsa/convênio é hard-delete (contrato leva as parcelas junto, mesmo pagas).
 - `Renegociacao.contratoOrigemId` assume que todas as parcelas vêm do mesmo contrato (usa o da primeira).
 
+## Caixa (recebimento presencial)
+Atendente busca aluno → seleciona débitos em aberto (cobranças avulsas + parcelas) → registra pagamento (dinheiro com troco / PIX / cartão débito / cartão crédito na maquineta) → baixa em transação → recibo PDF.
+
+### Models
+- `Recebimento` — alunoId, valor Decimal(10,2) (total quitado), metodo (`dinheiro|pix|cartao_debito|cartao_credito`), valorRecebido? (dinheiro, p/ troco), observacoes?, recebidoPorUserId? (User), criadoEm. Índices `[alunoId]`, `[criadoEm]`.
+- `RecebimentoItem` — recebimentoId (Cascade), cobrancaId? OU parcelaId?, descricao (snapshot), valor Decimal(10,2).
+
+### API
+| Rota | Permissão | Comportamento |
+|---|---|---|
+| GET `/api/caixa/debitos?alunoId=` | `cobranca:ler` | débitos em aberto do aluno: Cobrancas + Parcelas (via contrato.alunoId) com status `pendente|vencido`; `{itens:[{tipo,id,descricao,valor,vencimento,vencido}],total}`; parcela descrita como "Parcela N/total — Contrato #id"; `vencido` calculado no read (vencimento < hoje UTC); ordem vencimento asc |
+| GET `/api/recebimentos` | `cobranca:ler` | filtros `alunoId`, `data` (dia); alunoNome + contagem de itens; criadoEm desc, limit 100 |
+| POST `/api/recebimentos` | `cobranca:editar` | zod; em `$transaction` revalida cada item server-side (existe, pertence ao aluno, status `pendente|vencido` — senão **409** "Item já pago ou inválido"), soma total no servidor (nunca confia no client), dinheiro com valorRecebido < total → **400** "Valor recebido insuficiente"; baixa cada item (`pago`, dataPagamento hoje, metodoPagamento = metodo) e cria Recebimento (recebidoPorUserId = user logado) + itens (descricao/valor snapshot); audit `recebimento:create`; 201 `{id,valor,troco}` (troco só dinheiro) |
+| GET `/api/recebimentos/[id]` | `cobranca:ler` | detalhe com itens, alunoNome/CPF e nome de quem recebeu (User.nome) |
+| GET `/api/recebimentos/[id]/recibo` | `cobranca:ler` | PDF (`src/lib/pdf/recibo.tsx`, @react-pdf, runtime nodejs): "RECIBO Nº REC-000012", aluno/CPF, tabela de itens, total em destaque, método (rótulo PT), valor recebido/troco se dinheiro, data/hora, "Recebido por", rodapé "Documento sem valor fiscal" |
+
+### Tela
+`(app)/caixa` — 3 passos numa página: (1) busca de aluno com debounce (`/api/alunos?search=`); (2) tabela de débitos com checkbox por linha (badge "vencido" vermelho) e TOTAL selecionado em BRL; (3) método de pagamento (dinheiro exibe troco ao vivo, com "Falta X" se insuficiente) + observações → "Confirmar recebimento" → toast com troco → recibo em nova aba (`window.open`) → reseta seleção e recarrega débitos. Abaixo: card "Recebimentos de hoje" (`?data=hoje`) com botão de recibo por linha.
+
+### Regras
+- Total SEMPRE recalculado no servidor dentro da transação; qualquer item inválido/já pago aborta tudo (409) — evita corrida entre dois caixas.
+- Sem estorno/cancelamento de recebimento (débito; exigiria reabrir cobrança/parcela).
+- `metodoPagamento` gravado em Cobranca/Parcela usa os valores do caixa (`cartao_debito`/`cartao_credito`) — superset do enum documentado de Parcela.
+
 ## Como testar
 1. `npm run db:seed:demo`; login financeiro/admin.
 2. POST `/api/contratos` com `valorTotal: 1000, numParcelas: 3, descontoPercentual via bolsa 10%` → parcelas 300.00/300.00/300.00 (900 fecha exato); `diaVencimento: 31` com início em janeiro → parcela de fevereiro clampa p/ 28/29.
