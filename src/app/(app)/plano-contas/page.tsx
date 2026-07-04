@@ -14,6 +14,8 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Trash2 } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type PlanoConta = {
   id: number;
@@ -35,6 +37,7 @@ export default function PlanoContasPage() {
     queryKey: ["planos-conta"],
     queryFn: () => fetch("/api/planos-conta").then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   const criar = useMutation({
     mutationFn: async () => {
@@ -127,7 +130,7 @@ export default function PlanoContasPage() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando...</TableCell>
               </TableRow>
             ) : data && data.length > 0 ? (
-              data.map((p) => (
+              pageItems.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell>{p.codigo ?? "—"}</TableCell>
                   <TableCell className="font-medium">{p.nome}</TableCell>
@@ -152,6 +155,7 @@ export default function PlanoContasPage() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

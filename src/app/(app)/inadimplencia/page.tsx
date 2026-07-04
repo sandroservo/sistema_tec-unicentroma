@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertTriangle, Users, HandCoins } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type AlunoInadimplente = {
   alunoId: number;
@@ -30,6 +32,7 @@ export default function InadimplenciaPage() {
       return res.json();
     },
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.alunos);
 
   return (
     <div className="flex flex-col gap-6">
@@ -78,7 +81,7 @@ export default function InadimplenciaPage() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando...</TableCell>
               </TableRow>
             ) : data?.alunos && data.alunos.length > 0 ? (
-              data.alunos.map((a) => (
+              pageItems.map((a) => (
                 <TableRow key={a.alunoId}>
                   <TableCell className="font-medium">{a.alunoNome}</TableCell>
                   <TableCell className="text-center">{a.qtdParcelas}</TableCell>
@@ -108,6 +111,7 @@ export default function InadimplenciaPage() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

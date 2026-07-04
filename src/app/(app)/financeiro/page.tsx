@@ -7,12 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DollarSign, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function FinanceiroList() {
   const [status, setStatus] = useState<any>("");
 
   const { data: resumo, isLoading: loadingResumo } = useGetFinanceiroResumo();
   const { data: cobrancas, isLoading: loadingCobrancas } = useListCobrancas({ status: status || undefined });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(cobrancas);
 
   const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
@@ -110,7 +113,7 @@ export default function FinanceiroList() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando cobranças...</TableCell>
               </TableRow>
             ) : cobrancas && cobrancas.length > 0 ? (
-              cobrancas.map((cob) => (
+              pageItems.map((cob) => (
                 <TableRow key={cob.id}>
                   <TableCell>
                     {new Date(cob.vencimento).toLocaleDateString('pt-BR')}
@@ -137,6 +140,7 @@ export default function FinanceiroList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

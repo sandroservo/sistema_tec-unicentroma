@@ -16,6 +16,8 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, Trash2, CheckCircle } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Conta = {
   id: number;
@@ -45,6 +47,7 @@ export default function ContasPagarList() {
     queryFn: () =>
       fetch(`/api/contas-pagar${status !== "todos" ? `?status=${status}` : ""}`).then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   const baixar = useMutation({
     mutationFn: async () => {
@@ -148,7 +151,7 @@ export default function ContasPagarList() {
                 <TableCell colSpan={7} className="text-center h-24">Carregando...</TableCell>
               </TableRow>
             ) : data && data.length > 0 ? (
-              data.map((c) => (
+              pageItems.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.descricao}</TableCell>
                   <TableCell>{c.fornecedor ?? "—"}</TableCell>
@@ -180,6 +183,7 @@ export default function ContasPagarList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
 
       <Dialog open={!!pagar} onOpenChange={(o) => !o && setPagar(null)}>
         <DialogContent>

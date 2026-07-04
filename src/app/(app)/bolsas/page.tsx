@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Bolsa = {
   id: number;
@@ -31,6 +33,7 @@ function useListBolsas() {
 
 export default function BolsasList() {
   const { data, isLoading } = useListBolsas();
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
 
   return (
     <div className="flex flex-col gap-6">
@@ -65,7 +68,7 @@ export default function BolsasList() {
                 <TableCell colSpan={6} className="text-center h-24">Carregando bolsas...</TableCell>
               </TableRow>
             ) : data?.data && data.data.length > 0 ? (
-              data.data.map((b) => (
+              pageItems.map((b) => (
                 <TableRow key={b.id}>
                   <TableCell className="font-medium">{b.alunoNome ?? b.id}</TableCell>
                   <TableCell className="capitalize">{b.tipo}</TableCell>
@@ -93,6 +96,7 @@ export default function BolsasList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 const statusVariant = (s: string) =>
   s === "atrasado" ? "destructive" : s === "devolvido" ? "secondary" : "default";
@@ -16,6 +18,7 @@ const statusVariant = (s: string) =>
 export default function EmprestimosPage() {
   const [status, setStatus] = useState("");
   const { data, isLoading } = useEmprestimos(status && status !== "todos" ? status : undefined);
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
   const devolver = useDevolver();
   const pagarMulta = usePagarMulta();
   const { toast } = useToast();
@@ -72,7 +75,7 @@ export default function EmprestimosPage() {
             {isLoading ? (
               <TableRow><TableCell colSpan={6} className="text-center h-24">Carregando...</TableCell></TableRow>
             ) : data?.data?.length ? (
-              data.data.map((e) => (
+              pageItems.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="font-medium">{e.alunoNome}</TableCell>
                   <TableCell>{e.tituloNome} <span className="text-xs text-muted-foreground font-mono">({e.exemplarCodigo})</span></TableCell>
@@ -109,6 +112,7 @@ export default function EmprestimosPage() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

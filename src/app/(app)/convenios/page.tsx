@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Convenio = {
   id: number;
@@ -29,6 +31,7 @@ function useListConvenios() {
 
 export default function ConveniosList() {
   const { data, isLoading } = useListConvenios();
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,7 +65,7 @@ export default function ConveniosList() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando convênios...</TableCell>
               </TableRow>
             ) : data?.data && data.data.length > 0 ? (
-              data.data.map((c) => (
+              pageItems.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.nome}</TableCell>
                   <TableCell>{c.empresa || "-"}</TableCell>
@@ -87,6 +90,7 @@ export default function ConveniosList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

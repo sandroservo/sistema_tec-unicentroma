@@ -9,12 +9,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Edit } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function ProfessoresList() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<any>("");
 
   const { data: professores, isLoading } = useListProfessores({ search: search || undefined, status: status || undefined });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(professores);
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,7 +73,7 @@ export default function ProfessoresList() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando professores...</TableCell>
               </TableRow>
             ) : professores && professores.length > 0 ? (
-              professores.map((prof) => (
+              pageItems.map((prof) => (
                 <TableRow key={prof.id}>
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
@@ -107,6 +110,7 @@ export default function ProfessoresList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

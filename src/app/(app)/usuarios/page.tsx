@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Trash2 } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Usuario = {
   id: string;
@@ -47,6 +49,7 @@ export default function UsuariosList() {
   const { toast } = useToast();
   const { data, isLoading } = useListUsuarios(search);
   const del = useDeleteUsuario();
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
 
   function onDelete(id: string) {
     if (!confirm("Excluir este usuário?")) return;
@@ -100,7 +103,7 @@ export default function UsuariosList() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando usuários...</TableCell>
               </TableRow>
             ) : data?.data && data.data.length > 0 ? (
-              data.data.map((u) => (
+              pageItems.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell className="font-medium">{u.nome}</TableCell>
                   <TableCell>{u.email}</TableCell>
@@ -127,6 +130,7 @@ export default function UsuariosList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

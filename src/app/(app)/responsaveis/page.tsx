@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Responsavel = { id: number; nome: string; email: string; parentesco: string; numAlunos: number };
 
@@ -17,6 +19,7 @@ export default function ResponsaveisList() {
     queryKey: ["responsaveis"],
     queryFn: () => fetch("/api/responsaveis").then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,7 +54,7 @@ export default function ResponsaveisList() {
                 </TableCell>
               </TableRow>
             ) : data?.length ? (
-              data.map((r) => (
+              pageItems.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.nome}</TableCell>
                   <TableCell>{r.email}</TableCell>
@@ -69,6 +72,7 @@ export default function ResponsaveisList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

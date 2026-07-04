@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Turma = { id: number; nome: string };
 type Aula = {
@@ -27,6 +29,7 @@ export default function DiarioList() {
     queryFn: () =>
       fetch(`/api/aulas${turmaId ? `?turmaId=${turmaId}` : ""}`).then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(aulas);
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,7 +77,7 @@ export default function DiarioList() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando aulas...</TableCell>
               </TableRow>
             ) : aulas && aulas.length > 0 ? (
-              aulas.map((a) => (
+              pageItems.map((a) => (
                 <TableRow key={a.id}>
                   <TableCell>{a.data}</TableCell>
                   <TableCell className="font-medium">{a.turmaNome}</TableCell>
@@ -96,6 +99,7 @@ export default function DiarioList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

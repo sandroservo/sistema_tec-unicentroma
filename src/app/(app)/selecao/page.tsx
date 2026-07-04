@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Eye } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Processo = {
   id: number;
@@ -33,6 +35,7 @@ export default function SelecaoList() {
       return res.json();
     },
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
 
   return (
     <div className="flex flex-col gap-6">
@@ -67,7 +70,7 @@ export default function SelecaoList() {
                 <TableCell colSpan={6} className="text-center h-24">Carregando...</TableCell>
               </TableRow>
             ) : data?.data && data.data.length > 0 ? (
-              data.data.map((p) => (
+              pageItems.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.nome}</TableCell>
                   <TableCell>{p.inscricaoInicio} — {p.inscricaoFim}</TableCell>
@@ -93,6 +96,7 @@ export default function SelecaoList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

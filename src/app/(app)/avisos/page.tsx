@@ -28,6 +28,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 const PUBLICO_LABEL: Record<string, string> = {
   todos: "Todos",
@@ -70,6 +72,7 @@ export default function AvisosAdmin() {
     queryKey: ["avisos"],
     queryFn: () => fetch("/api/avisos").then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   const salvar = useMutation({
     mutationFn: async () => {
@@ -161,7 +164,7 @@ export default function AvisosAdmin() {
                 </TableCell>
               </TableRow>
             ) : data?.length ? (
-              data.map((a) => (
+              pageItems.map((a) => (
                 <TableRow key={a.id}>
                   <TableCell className="font-medium">{a.titulo}</TableCell>
                   <TableCell>
@@ -190,6 +193,7 @@ export default function AvisosAdmin() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

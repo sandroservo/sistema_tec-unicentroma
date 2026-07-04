@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Sala = {
   id: number;
@@ -30,6 +32,7 @@ export default function SalasList() {
       return res.json();
     },
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   const remove = useMutation({
     mutationFn: async (id: number) => {
@@ -76,7 +79,7 @@ export default function SalasList() {
                 <TableCell colSpan={6} className="text-center h-24">Carregando salas...</TableCell>
               </TableRow>
             ) : data && data.length > 0 ? (
-              data.map((sala) => (
+              pageItems.map((sala) => (
                 <TableRow key={sala.id}>
                   <TableCell className="font-medium">{sala.nome}</TableCell>
                   <TableCell>{sala.bloco || "-"}</TableCell>
@@ -111,6 +114,7 @@ export default function SalasList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

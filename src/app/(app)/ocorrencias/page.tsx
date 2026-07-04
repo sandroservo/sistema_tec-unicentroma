@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 import {
   Dialog,
   DialogContent,
@@ -79,6 +81,7 @@ export default function OcorrenciasPage() {
       return fetch(`/api/ocorrencias?${p}`).then((r) => r.json());
     },
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
 
   const criar = useMutation({
     mutationFn: () =>
@@ -247,7 +250,7 @@ export default function OcorrenciasPage() {
                 </TableCell>
               </TableRow>
             ) : data?.data?.length ? (
-              data.data.map((o) => {
+              pageItems.map((o) => {
                 const tb = tipoBadge(o.tipo);
                 return (
                   <TableRow key={o.id}>
@@ -297,6 +300,7 @@ export default function OcorrenciasPage() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </Card>
     </div>
   );

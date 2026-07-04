@@ -15,10 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Eye, BookMarked } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function AcervoPage() {
   const [search, setSearch] = useState("");
   const { data, isLoading } = useTitulos(search || undefined);
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
 
   const [reservarId, setReservarId] = useState<number | null>(null);
   const [alunoId, setAlunoId] = useState<string>("");
@@ -85,7 +88,7 @@ export default function AcervoPage() {
             {isLoading ? (
               <TableRow><TableCell colSpan={5} className="text-center h-24">Carregando...</TableCell></TableRow>
             ) : data?.data?.length ? (
-              data.data.map((t) => (
+              pageItems.map((t) => (
                 <TableRow key={t.id}>
                   <TableCell className="font-medium">{t.titulo}</TableCell>
                   <TableCell>{t.autor || "-"}</TableCell>
@@ -117,6 +120,7 @@ export default function AcervoPage() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
 
       <Dialog open={reservarId != null} onOpenChange={(o) => !o && setReservarId(null)}>
         <DialogContent>

@@ -15,6 +15,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 const METODOS: Record<string, string> = {
   dinheiro: "Dinheiro",
@@ -586,6 +588,7 @@ function AbaHistorico() {
     queryKey: ["caixa-historico", de, ate, status],
     queryFn: () => fetch(`/api/caixa/sessoes?${params}`).then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(sessoes);
 
   return (
     <Card>
@@ -638,7 +641,7 @@ function AbaHistorico() {
                 </TableCell>
               </TableRow>
             ) : sessoes?.length ? (
-              sessoes.map((s) => (
+              pageItems.map((s) => (
                 <TableRow key={s.id} className="cursor-pointer" onClick={() => setDetalheId(s.id)}>
                   <TableCell>
                     {new Date(s.abertoEm).toLocaleDateString("pt-BR")} {hora(s.abertoEm)}
@@ -667,6 +670,7 @@ function AbaHistorico() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </CardContent>
 
       <SessaoDetalheDialog id={detalheId} onClose={() => setDetalheId(null)} />

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListAlunos, useDeleteAluno, getListAlunosQueryKey } from "@/lib/api-client";
+import { PaginationBar } from "@/components/pagination-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -32,10 +33,15 @@ function formatCpf(cpf?: string | null): string {
 export default function AlunosList() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<any>("");
+  const [page, setPage] = useState(1);
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data, isLoading } = useListAlunos({ search: search || undefined, status: status || undefined });
+  useEffect(() => {
+    setPage(1);
+  }, [search, status]);
+
+  const { data, isLoading } = useListAlunos({ search: search || undefined, status: status || undefined, page, limit: 12 });
   const deleteAluno = useDeleteAluno();
 
   function excluir(id: number, nome: string) {
@@ -171,6 +177,12 @@ export default function AlunosList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar
+          page={page}
+          totalPages={Math.max(1, Math.ceil((data?.total ?? 0) / 12))}
+          total={data?.total ?? 0}
+          onChange={setPage}
+        />
       </div>
     </div>
   );

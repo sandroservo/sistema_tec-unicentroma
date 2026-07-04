@@ -16,6 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 const TIPOS: Record<string, string> = {
   declaracao_matricula: "Declaração de matrícula",
@@ -76,6 +78,7 @@ export default function RequerimentosAdmin() {
     queryFn: () =>
       fetch(`/api/requerimentos${filtro ? `?status=${filtro}` : ""}`).then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   const atender = useMutation({
     mutationFn: async () => {
@@ -146,7 +149,7 @@ export default function RequerimentosAdmin() {
                 </TableCell>
               </TableRow>
             ) : data?.length ? (
-              data.map((r) => (
+              pageItems.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.protocolo}</TableCell>
                   <TableCell>{r.alunoNome ?? "—"}</TableCell>
@@ -172,6 +175,7 @@ export default function RequerimentosAdmin() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
 
       <Dialog open={!!atual} onOpenChange={(o) => !o && setAtual(null)}>
         <DialogContent>

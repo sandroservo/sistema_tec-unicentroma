@@ -9,12 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Edit, Clock, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function CursosList() {
   const [search, setSearch] = useState("");
   const [modalidade, setModalidade] = useState<any>("");
 
   const { data: cursos, isLoading } = useListCursos({ search: search || undefined, modalidade: modalidade || undefined });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(cursos);
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,8 +60,9 @@ export default function CursosList() {
       {isLoading ? (
         <div className="text-center py-12">Carregando cursos...</div>
       ) : cursos && cursos.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cursos.map((curso) => (
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pageItems.map((curso) => (
             <Card key={curso.id} className="flex flex-col">
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
@@ -92,6 +96,8 @@ export default function CursosList() {
               </CardFooter>
             </Card>
           ))}
+          </div>
+          <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
         </div>
       ) : (
         <div className="text-center py-12 text-muted-foreground border rounded-lg bg-card">

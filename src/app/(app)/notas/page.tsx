@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useListNotas } from "@/lib/api-client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function NotasList() {
   const { data: notas, isLoading } = useListNotas({});
+  const { pageItems, page, setPage, totalPages, total } = usePagination(notas);
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,7 +39,7 @@ export default function NotasList() {
                 <TableCell colSpan={7} className="text-center h-24">Carregando notas...</TableCell>
               </TableRow>
             ) : notas && notas.length > 0 ? (
-              notas.map((nota) => (
+              pageItems.map((nota) => (
                 <TableRow key={nota.id}>
                   <TableCell className="font-medium">{nota.alunoNome}</TableCell>
                   <TableCell>
@@ -62,6 +65,7 @@ export default function NotasList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

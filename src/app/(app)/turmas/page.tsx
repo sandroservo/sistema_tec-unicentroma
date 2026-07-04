@@ -9,11 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Plus, Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function TurmasList() {
   const [status, setStatus] = useState<any>("");
 
   const { data: turmas, isLoading } = useListTurmas({ status: status || undefined });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(turmas);
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,7 +65,7 @@ export default function TurmasList() {
                 <TableCell colSpan={6} className="text-center h-24">Carregando turmas...</TableCell>
               </TableRow>
             ) : turmas && turmas.length > 0 ? (
-              turmas.map((turma) => (
+              pageItems.map((turma) => (
                 <TableRow key={turma.id}>
                   <TableCell>
                     <div className="font-medium">{turma.nome}</div>
@@ -107,6 +110,7 @@ export default function TurmasList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

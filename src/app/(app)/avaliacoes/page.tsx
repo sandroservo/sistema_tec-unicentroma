@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Turma = { id: number; nome: string };
 type Disciplina = { id: number; nome: string };
@@ -37,6 +39,7 @@ export default function AvaliacoesList() {
     queryKey: ["avaliacoes", turmaId, disciplinaId],
     queryFn: () => fetchJson(`/api/avaliacoes?${qs.toString()}`),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,7 +89,7 @@ export default function AvaliacoesList() {
             {isLoading ? (
               <TableRow><TableCell colSpan={6} className="text-center h-24">Carregando...</TableCell></TableRow>
             ) : data && data.length > 0 ? (
-              data.map((a) => (
+              pageItems.map((a) => (
                 <TableRow key={a.id}>
                   <TableCell><Badge variant="secondary">{a.tipo}</Badge></TableCell>
                   <TableCell className="font-medium">{a.descricao || "-"}</TableCell>
@@ -112,6 +115,7 @@ export default function AvaliacoesList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

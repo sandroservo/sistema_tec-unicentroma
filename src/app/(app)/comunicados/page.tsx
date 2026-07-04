@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Comunicado = {
   id: number;
@@ -55,6 +57,7 @@ export default function ComunicadosPage() {
     queryKey: ["comunicados"],
     queryFn: () => json<Comunicado[]>("/api/comunicados"),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(comunicados);
 
   const enviar = useMutation({
     mutationFn: () =>
@@ -141,7 +144,7 @@ export default function ComunicadosPage() {
             {isLoading ? (
               <TableRow><TableCell colSpan={5} className="text-center h-24">Carregando...</TableCell></TableRow>
             ) : comunicados && comunicados.length > 0 ? (
-              comunicados.map((c) => (
+              pageItems.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.titulo}</TableCell>
                   <TableCell className="capitalize">{c.canal}</TableCell>
@@ -156,6 +159,7 @@ export default function ComunicadosPage() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

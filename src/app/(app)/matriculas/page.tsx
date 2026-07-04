@@ -6,11 +6,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function MatriculasList() {
   const [status, setStatus] = useState<any>("");
 
   const { data: matriculas, isLoading } = useListMatriculas({ status: status || undefined });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(matriculas);
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,7 +55,7 @@ export default function MatriculasList() {
                 <TableCell colSpan={4} className="text-center h-24">Carregando matrículas...</TableCell>
               </TableRow>
             ) : matriculas && matriculas.length > 0 ? (
-              matriculas.map((mat) => (
+              pageItems.map((mat) => (
                 <TableRow key={mat.id}>
                   <TableCell>
                     {new Date(mat.dataMatricula).toLocaleDateString('pt-BR')}
@@ -82,6 +85,7 @@ export default function MatriculasList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

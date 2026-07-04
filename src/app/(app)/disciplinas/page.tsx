@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 export default function DisciplinasList() {
   const [cursoId, setCursoId] = useState<any>("");
 
   const { data: disciplinas, isLoading } = useListDisciplinas({ cursoId: cursoId ? Number(cursoId) : undefined });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(disciplinas);
   const { data: cursos } = useListCursos({});
 
   return (
@@ -53,7 +56,7 @@ export default function DisciplinasList() {
                 <TableCell colSpan={5} className="text-center h-24">Carregando disciplinas...</TableCell>
               </TableRow>
             ) : disciplinas && disciplinas.length > 0 ? (
-              disciplinas.map((disc) => (
+              pageItems.map((disc) => (
                 <TableRow key={disc.id}>
                   <TableCell>
                     <div className="font-medium">{disc.nome}</div>
@@ -74,6 +77,7 @@ export default function DisciplinasList() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
     </div>
   );

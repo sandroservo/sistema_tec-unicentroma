@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Eye } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Contrato = {
   id: number;
@@ -26,6 +28,7 @@ export default function ContratosList() {
     queryKey: ["contratos"],
     queryFn: () => fetch("/api/contratos").then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,7 +63,7 @@ export default function ContratosList() {
                 <TableCell colSpan={6} className="text-center h-24">Carregando...</TableCell>
               </TableRow>
             ) : data && data.length > 0 ? (
-              data.map((c) => (
+              pageItems.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.alunoNome ?? `#${c.alunoId}`}</TableCell>
                   <TableCell>{brl(c.valorTotal)}</TableCell>
@@ -90,6 +93,7 @@ export default function ContratosList() {
           </TableBody>
         </Table>
       </div>
+      <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
     </div>
   );
 }

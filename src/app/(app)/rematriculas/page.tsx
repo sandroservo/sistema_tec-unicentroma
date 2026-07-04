@@ -16,6 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 const STATUS_LABEL: Record<string, string> = {
   solicitada: "Solicitada",
@@ -59,6 +61,7 @@ export default function RematriculasAdmin() {
     queryFn: () =>
       fetch(`/api/rematriculas${filtro ? `?status=${filtro}` : ""}`).then((r) => r.json()),
   });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data);
 
   const processar = useMutation({
     mutationFn: async () => {
@@ -129,7 +132,7 @@ export default function RematriculasAdmin() {
                 </TableCell>
               </TableRow>
             ) : data?.length ? (
-              data.map((r) => (
+              pageItems.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell>{r.alunoNome ?? "—"}</TableCell>
                   <TableCell>{r.turmaDestinoNome}</TableCell>
@@ -164,6 +167,7 @@ export default function RematriculasAdmin() {
             )}
           </TableBody>
         </Table>
+        <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
       </div>
 
       <Dialog open={!!atual} onOpenChange={(o) => !o && setAtual(null)}>

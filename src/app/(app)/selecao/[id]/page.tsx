@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
+import { usePagination } from "@/hooks/use-pagination";
+import { PaginationBar } from "@/components/pagination-bar";
 
 type Inscricao = {
   id: number;
@@ -52,6 +54,7 @@ export default function ProcessoDetalhe() {
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["selecao", id] });
+  const { pageItems, page, setPage, totalPages, total } = usePagination(data?.inscricoes);
 
   const patch = useMutation({
     mutationFn: async ({ inscricaoId, body }: { inscricaoId: number; body: Record<string, unknown> }) => {
@@ -122,7 +125,7 @@ export default function ProcessoDetalhe() {
             <TableBody>
               {data.inscricoes.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="text-center h-24 text-muted-foreground">Sem inscrições.</TableCell></TableRow>
-              ) : data.inscricoes.map((i) => (
+              ) : pageItems.map((i) => (
                 <TableRow key={i.id}>
                   <TableCell>{i.classificacao ?? "-"}</TableCell>
                   <TableCell>
@@ -181,6 +184,7 @@ export default function ProcessoDetalhe() {
               ))}
             </TableBody>
           </Table>
+          <PaginationBar page={page} totalPages={totalPages} total={total} onChange={setPage} />
         </CardContent>
       </Card>
     </div>
