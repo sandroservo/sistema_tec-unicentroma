@@ -76,6 +76,11 @@ export async function POST(req: Request) {
     const b = parsed.data;
     const hoje = new Date();
 
+    const sessaoAberta = await prisma.caixaSessao.findFirst({ where: { status: "aberto" }, select: { id: true } });
+    if (!sessaoAberta) {
+      return NextResponse.json({ error: "Abra o caixa antes de registrar recebimentos" }, { status: 409 });
+    }
+
     const resultado = await prisma.$transaction(async (tx) => {
       // Revalida cada item no servidor — nunca confiar no total do client.
       const itensValidados: { cobrancaId?: number; parcelaId?: number; descricao: string; valor: number }[] = [];
@@ -115,6 +120,7 @@ export async function POST(req: Request) {
       const rec = await tx.recebimento.create({
         data: {
           alunoId: b.alunoId,
+          caixaSessaoId: sessaoAberta.id,
           valor: total,
           metodo: b.metodo,
           valorRecebido: b.metodo === "dinheiro" ? (b.valorRecebido ?? null) : null,

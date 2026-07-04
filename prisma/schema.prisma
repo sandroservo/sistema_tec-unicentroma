@@ -778,10 +778,30 @@ model Aviso {
   @@map("avisos")
 }
 
+// Sessão de caixa: aberta no início do dia (fundo de troco), fechada com conferência.
+model CaixaSessao {
+  id                Int           @id @default(autoincrement())
+  status            String        @default("aberto") // aberto | fechado
+  valorAbertura     Decimal       @default(0) @map("valor_abertura") @db.Decimal(10, 2) // fundo de troco
+  valorFechamento   Decimal?      @map("valor_fechamento") @db.Decimal(10, 2) // contado no fechamento
+  abertoPorUserId   String?       @map("aberto_por_user_id")
+  fechadoPorUserId  String?       @map("fechado_por_user_id")
+  abertoEm          DateTime      @default(now()) @map("aberto_em")
+  fechadoEm         DateTime?     @map("fechado_em")
+  observacoes       String?
+  recebimentos      Recebimento[]
+
+  @@index([status])
+  @@index([abertoEm])
+  @@map("caixa_sessoes")
+}
+
 // Caixa: recebimento presencial (dinheiro/PIX/cartão na maquineta) que quita cobranças/parcelas.
 model Recebimento {
   id                Int               @id @default(autoincrement())
   alunoId           Int               @map("aluno_id")
+  caixaSessaoId     Int?              @map("caixa_sessao_id")
+  caixaSessao       CaixaSessao?      @relation(fields: [caixaSessaoId], references: [id])
   valor             Decimal           @db.Decimal(10, 2) // total quitado
   metodo            String // dinheiro | pix | cartao_debito | cartao_credito
   valorRecebido     Decimal?          @map("valor_recebido") @db.Decimal(10, 2) // dinheiro: p/ cálculo de troco
