@@ -6,10 +6,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePagination } from "@/hooks/use-pagination";
 import { PaginationBar } from "@/components/pagination-bar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Sala = {
   id: number;
@@ -89,18 +100,37 @@ export default function SalasList() {
                     <Badge variant={sala.ativo ? "default" : "secondary"}>{sala.ativo ? "Sim" : "Não"}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/salas/${sala.id}`}><Edit className="w-4 h-4" /></Link>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" asChild title="Ver">
+                        <Link href={`/salas/${sala.id}`}><Eye className="w-4 h-4" /></Link>
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={remove.isPending}
-                        onClick={() => remove.mutate(sala.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
+                      <Button variant="ghost" size="icon" asChild title="Editar">
+                        <Link href={`/salas/${sala.id}/editar`}><Edit className="w-4 h-4" /></Link>
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" title="Excluir" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir sala?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {sala.nome} será removida permanentemente. Esta ação fica registrada na auditoria.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => remove.mutate(sala.id)}
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>

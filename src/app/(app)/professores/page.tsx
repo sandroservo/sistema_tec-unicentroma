@@ -2,22 +2,51 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useListProfessores } from "@/lib/api-client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListProfessores, useDeleteProfessor, getListProfessoresQueryKey } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePagination } from "@/hooks/use-pagination";
 import { PaginationBar } from "@/components/pagination-bar";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function ProfessoresList() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<any>("");
+  const { toast } = useToast();
+  const qc = useQueryClient();
 
   const { data: professores, isLoading } = useListProfessores({ search: search || undefined, status: status || undefined });
   const { pageItems, page, setPage, totalPages, total } = usePagination(professores);
+  const deleteProfessor = useDeleteProfessor();
+
+  function excluir(id: number, nome: string) {
+    deleteProfessor.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: getListProfessoresQueryKey() });
+          toast({ title: "Professor excluído", description: `${nome} foi removido.` });
+        },
+        onError: () => toast({ title: "Erro", description: "Não foi possível excluir.", variant: "destructive" }),
+      },
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -95,9 +124,42 @@ export default function ProfessoresList() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" asChild title="Ver">
+                        <Link href={`/professores/${prof.id}`}>
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild title="Editar">
+                        <Link href={`/professores/${prof.id}/editar`}>
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" title="Excluir" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir professor?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {prof.nome} será removido permanentemente. Esta ação fica registrada na auditoria.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => excluir(prof.id, prof.nome)}
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

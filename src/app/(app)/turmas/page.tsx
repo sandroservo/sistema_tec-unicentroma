@@ -2,21 +2,50 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useListTurmas } from "@/lib/api-client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListTurmas, useDeleteTurma, getListTurmasQueryKey } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePagination } from "@/hooks/use-pagination";
 import { PaginationBar } from "@/components/pagination-bar";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function TurmasList() {
   const [status, setStatus] = useState<any>("");
+  const { toast } = useToast();
+  const qc = useQueryClient();
 
   const { data: turmas, isLoading } = useListTurmas({ status: status || undefined });
   const { pageItems, page, setPage, totalPages, total } = usePagination(turmas);
+  const deleteTurma = useDeleteTurma();
+
+  function excluir(id: number) {
+    deleteTurma.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: getListTurmasQueryKey() });
+          toast({ title: "Turma excluída" });
+        },
+        onError: () => toast({ title: "Erro", description: "Não foi possível excluir (verifique matrículas vinculadas).", variant: "destructive" }),
+      },
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -93,11 +122,38 @@ export default function TurmasList() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/turmas/${turma.id}`}>
-                        <Eye className="w-4 h-4" />
-                      </Link>
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" asChild title="Visualizar">
+                        <Link href={`/turmas/${turma.id}`}><Eye className="w-4 h-4" /></Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild title="Editar">
+                        <Link href={`/turmas/${turma.id}/editar`}><Edit className="w-4 h-4" /></Link>
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" title="Excluir" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir turma?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {turma.nome} será removida. Turmas com matrículas vinculadas não podem ser excluídas.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => excluir(turma.id)}
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

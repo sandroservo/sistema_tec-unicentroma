@@ -2,22 +2,51 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useListCursos } from "@/lib/api-client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListCursos, useDeleteCurso, getListCursosQueryKey } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Clock, MapPin } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2, Clock, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePagination } from "@/hooks/use-pagination";
 import { PaginationBar } from "@/components/pagination-bar";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function CursosList() {
   const [search, setSearch] = useState("");
   const [modalidade, setModalidade] = useState<any>("");
+  const { toast } = useToast();
+  const qc = useQueryClient();
 
   const { data: cursos, isLoading } = useListCursos({ search: search || undefined, modalidade: modalidade || undefined });
   const { pageItems, page, setPage, totalPages, total } = usePagination(cursos);
+  const deleteCurso = useDeleteCurso();
+
+  function excluir(id: number, nome: string) {
+    deleteCurso.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: getListCursosQueryKey() });
+          toast({ title: "Curso excluído", description: `${nome} foi removido.` });
+        },
+        onError: () => toast({ title: "Erro", description: "Não foi possível excluir.", variant: "destructive" }),
+      },
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,11 +117,42 @@ export default function CursosList() {
                 <div className="font-bold text-lg text-primary">
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(curso.valor)}
                 </div>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/cursos/${curso.id}/editar`}>
-                    <Edit className="w-4 h-4 mr-2" /> Editar
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" asChild title="Ver">
+                    <Link href={`/cursos/${curso.id}`}>
+                      <Eye className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="icon" asChild title="Editar">
+                    <Link href={`/cursos/${curso.id}/editar`}>
+                      <Edit className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" title="Excluir" className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir curso?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {curso.nome} será removido. Esta ação fica registrada na auditoria.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => excluir(curso.id, curso.nome)}
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardFooter>
             </Card>
           ))}

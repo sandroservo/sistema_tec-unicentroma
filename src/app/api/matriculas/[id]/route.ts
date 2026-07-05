@@ -32,6 +32,35 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 }
 
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const guard = await requirePermission("matricula:editar");
+    if (guard instanceof NextResponse) return guard;
+    const { id } = await params;
+    const matriculaId = parseInt(id);
+
+    const removida = await prisma.$transaction(async (tx) => {
+      const m = await tx.matricula.findUnique({ where: { id: matriculaId } });
+      if (!m) return null;
+      // Devolve a vaga à turma se a matrícula estava ativa (nunca deixa negativo).
+      if (m.status === "ativa") {
+        await tx.turma.updateMany({
+          where: { id: m.turmaId, vagasOcupadas: { gt: 0 } },
+          data: { vagasOcupadas: { decrement: 1 } },
+        });
+      }
+      await tx.matricula.delete({ where: { id: matriculaId } });
+      return m;
+    });
+
+    if (!removida) return NextResponse.json({ error: "Matrícula não encontrada" }, { status: 404 });
+    await logAudit({ acao: "matricula:delete", recurso: "Matricula", recursoId: matriculaId, antes: removida });
+    return new NextResponse(null, { status: 204 });
+  } catch {
+    return NextResponse.json({ error: "Erro ao excluir matrícula" }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requirePermission("matricula:editar");
