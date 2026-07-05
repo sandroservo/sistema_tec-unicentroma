@@ -2,13 +2,25 @@
 
 // TODO: link no app-sidebar (Bolsas)
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { usePagination } from "@/hooks/use-pagination";
 import { PaginationBar } from "@/components/pagination-bar";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Bolsa = {
   id: number;
@@ -34,6 +46,18 @@ function useListBolsas() {
 export default function BolsasList() {
   const { data, isLoading } = useListBolsas();
   const { pageItems, page, setPage, totalPages, total } = usePagination(data?.data);
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  async function excluir(id: number) {
+    const res = await fetch(`/api/bolsas/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      qc.invalidateQueries({ queryKey: ["bolsas"] });
+      toast({ title: "Bolsa excluída" });
+    } else {
+      toast({ title: "Erro", description: "Não foi possível excluir.", variant: "destructive" });
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,9 +104,38 @@ export default function BolsasList() {
                     <Badge variant={b.ativo ? "default" : "secondary"}>{b.ativo ? "ativo" : "inativo"}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/bolsas/${b.id}`}>Ver</Link>
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" asChild title="Visualizar">
+                        <Link href={`/bolsas/${b.id}`}><Eye className="w-4 h-4" /></Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild title="Editar">
+                        <Link href={`/bolsas/${b.id}/editar`}><Edit className="w-4 h-4" /></Link>
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" title="Excluir" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir bolsa?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              A bolsa de {b.alunoNome ?? "aluno"} será removida. Ação irreversível.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => excluir(b.id)}
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
