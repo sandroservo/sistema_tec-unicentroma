@@ -204,7 +204,7 @@ export default function MatriculasList() {
               <p><span className="text-muted-foreground">Aluno:</span> <span className="font-medium">{ver.alunoNome}</span></p>
               <p><span className="text-muted-foreground">Turma:</span> {ver.turmaNome} — {ver.cursoNome}</p>
               <p><span className="text-muted-foreground">Data:</span> {new Date(ver.dataMatricula).toLocaleDateString("pt-BR")}</p>
-              <p><span className="text-muted-foreground">Status:</span> <Badge variant="secondary">{ver.status}</Badge></p>
+              <div className="flex items-center gap-2"><span className="text-muted-foreground">Status:</span> <Badge variant="secondary">{ver.status}</Badge></div>
               <p><span className="text-muted-foreground">Observações:</span> {ver.observacoes || "—"}</p>
             </div>
           )}

@@ -219,11 +219,13 @@ function CaixaAberto({ sessao }: { sessao: NonNullable<SessaoAtual> }) {
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4">
           <div className="flex flex-col gap-1">
-            <p className="font-medium">
-              <Badge className="mr-2">Caixa aberto</Badge>
-              às {hora(sessao.abertoEm)}
-              {sessao.abertoPorNome ? ` por ${sessao.abertoPorNome}` : ""} · fundo {brl(sessao.valorAbertura)}
-            </p>
+            <div className="flex items-center gap-2 font-medium">
+              <Badge>Caixa aberto</Badge>
+              <span>
+                às {hora(sessao.abertoEm)}
+                {sessao.abertoPorNome ? ` por ${sessao.abertoPorNome}` : ""} · fundo {brl(sessao.valorAbertura)}
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground">
               Recebido: {brl(sessao.totais.geral)} — dinheiro {brl(sessao.totais.dinheiro)} · PIX {brl(sessao.totais.pix)} ·
               débito {brl(sessao.totais.cartao_debito)} · crédito {brl(sessao.totais.cartao_credito)} (
